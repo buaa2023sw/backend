@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+DigiCertGlobalRootCA.crt.pem
+migrations/0001_initial.py
