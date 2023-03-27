@@ -1,28 +1,131 @@
 from django.db import models
 
+class User(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  email         = models.EmailField(unique=True)
+  password      = models.CharField(max_length=255)
+  STATUS_LIST = (
+    ('A', 'NORMAL'),
+    ('B', 'ILLEGAL'),
+    ('C', 'ADMIN'),
+  )
+  status        = models.CharField(max_length=2, choices=STATUS_LIST)
+  
+class Project(models.Model):
+  id            = models.AutoField(primary_key=True)
+  create_time   = models.DateTimeField(auto_now_add=True)
+  STATUS_LIST = (
+    ('A', 'COMPLETED'),
+    ('B', 'INPROGRESS'),
+    ('C', 'NOTSTART'),
+  )
+  status        = models.CharField(max_length=2, choices=STATUS_LIST)
+  name          = models.CharField(max_length=255)
+  outline       = models.TextField()
+  manager_id    = models.ForeignKey(User, on_delete=models.CASCADE)
+  
+class Task(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  create_time   = models.DateTimeField(auto_now_add=True)
+  deadline      = models.DateTimeField()
+  outline       = models.TextField()
+  STATUS_LIST = (
+    ('A', 'COMPLETED'),
+    ('B', 'INPROGRESS'),
+    ('C', 'NOTSTART'),
+  )
+  status        = models.CharField(max_length=2, choices=STATUS_LIST)
+  contribute_level = models.IntegerField()
+  parent_id     = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  
+class Group(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  outline       = models.TextField()
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  
+class Message(models.Model):
+  id            = models.AutoField(primary_key=True)
+  TYPE_LIST = (
+    ('A', 'TEXT'),
+    ('B', 'PIC'),
+    ('C', 'FILE'),
+  )
+  type          = models.CharField(max_length=2, choices=TYPE_LIST)
+  content       = models.CharField(max_length=255) # TODO use FILE
+  group_id      = models.ForeignKey(Group, on_delete=models.CASCADE)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  time          = models.DateTimeField(auto_now_add=True)
+  
+class Document(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  outline       = models.TextField()
+  content       = models.TextField()
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  
+class Post(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  content       = models.TextField()
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
 
-class UserInfo(models.Model):
-    user_name = models.CharField(max_length=64,unique=True)
-    user_password = models.CharField(max_length=64)
+class Repo(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  local_path    = models.CharField(max_length=255) # TODO
+  remote_path   = models.CharField(max_length=255)
+  
+class Progress(models.Model):
+  id            = models.AutoField(primary_key=True)
+  name          = models.CharField(max_length=255)
+  TYPE_LIST = (
+    ('A', 'COMMIT'),
+    ('B', 'ISSUE'),
+    ('C', 'PR'),
+  )
+  type          = models.CharField(max_length=2, choices=TYPE_LIST)
+  remote_path   = models.CharField(max_length=255)
+  repo_id       = models.ForeignKey(Repo, on_delete=models.CASCADE)
+  
+class UserProject(models.Model):
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  ROLE_LIST = (
+    ('A', 'NORMAL'),
+    ('B', 'ADMIN'),
+  )
+  role          = models.CharField(max_length=2, choices=ROLE_LIST)
+  
+class UserGroup(models.Model):
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  group_id      = models.ForeignKey(Group, on_delete=models.CASCADE)
+  ROLE_LIST = (
+    ('A', 'NORMAL'),
+    ('B', 'ADMIN'),
+  )
+  role          = models.CharField(max_length=2, choices=ROLE_LIST)
+  
+class UserTask(models.Model):
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  task_id       = models.ForeignKey(Task, on_delete=models.CASCADE)
 
-    user_type = models.CharField(max_length=10,null=True)
+class UserDocument(models.Model):
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  document_id   = models.ForeignKey(Document, on_delete=models.CASCADE)
+  
+class UserProjectRepo(models.Model):
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  repo_id       = models.ForeignKey(Repo, on_delete=models.CASCADE)
+  
+class ProgressTask(models.Model):
+  repo_id       = models.ForeignKey(Repo, on_delete=models.CASCADE)
+  progress_id   = models.ForeignKey(Progress, on_delete=models.CASCADE)
 
-    user_address = models.CharField(max_length=64,null=True)
-    user_mobile = models.CharField(max_length=64, null=True)
-    user_avatar = models.ImageField(upload_to="user_avatar/",null=True,default="user_avatar/default_avatar.jpg")
-    user_createtime = models.DateField(auto_now_add=True,null=True)
-
-    user_province = models.CharField(max_length=16,null=True)
-    user_city = models.CharField(max_length=16, null=True)
-    user_area = models.CharField(max_length=16, null=True)
-
-
-class UserLog(models.Model):
-    log_id = models.ForeignKey("UserInfo", on_delete=models.CASCADE)
-    log_time = models.DateTimeField(auto_now_add=True)
-    log_name=models.CharField(max_length=16)
-    log_type=models.CharField(max_length=10,null=True)
-
-    log_province = models.CharField(max_length=16, null=True)
-    log_city = models.CharField(max_length=16, null=True)
-    log_area = models.CharField(max_length=16, null=True)
+  

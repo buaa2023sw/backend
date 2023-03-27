@@ -27,19 +27,4 @@ from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('add_userInfo/', UserView.add_userInfo),
-    path('search_userInfo/', UserView.search_userInfo),
-    path('fetch_userInfo/', UserView.fetch_userInfo),
-    path('edit_userInfo/', UserView.edit_userInfo),
-    path('userId2userName/', UserView.userId2userName),
-    path('search_usertype/', UserView.search_usertype),
-    path('edit_password/', UserView.edit_password),
-
-
-    re_path(r'^media/avatar/(?P<path>.*)$', serve, {'document_root': os.path.join(settings.MEDIA_ROOT,'avatar/')}),
-    re_path(r'^media/user_avatar/(?P<path>.*)$', serve, {'document_root': os.path.join(settings.MEDIA_ROOT,'user_avatar/')}),
-    re_path(r'^media/comments/(?P<path>.*)$', serve, {'document_root': os.path.join(settings.MEDIA_ROOT,'user_avatar/')}),
-
-    #re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-    path("",TemplateView.as_view(template_name="index.html"))
 ]

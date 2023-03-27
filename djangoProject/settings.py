@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'myApp',
-    'imagekit'
+    # 'imagekit'
 ]
 
 MIDDLEWARE = [
@@ -97,14 +97,33 @@ DATABASES = {
     #}
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'django_test',
-        # TODO 数据库名字 django_test
-        'USER': 'root',
-        'PASSWORD': '020322',
-        'HOST': '127.0.0.1',
+        'NAME': 'develop1',
+        'USER': 'Everybody',
+        'PASSWORD': 'SeinHeisstWerden,LebenHeisstLernen',
+        'PORT' : '3306',
+        'HOST': 'buaa2023sw.mysql.database.azure.com',
+        'OPTIONS' : {
+          'ssl' : {'ca' : './djangoProject/DigiCertGlobalRootCA.crt.pem'}
+        }
     }
 }
-
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.db.backends': {
+            'handlers': ['console'],
+            'propagate': True,
+            'level':'DEBUG',
+        },
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
