@@ -21,7 +21,7 @@
 可以自行修改 `myApp/management/commands/rebuilddb.py` 中 `buildDataBase` 函数来初始化数据库信息。
 
 ## api 开发
-- 在 myApp/views.py 中添加视图函数
+- 在 myApp/<你负责的模块>.py 中添加视图函数
 - 在 djangoProject/urls.py 中添加视图函数 url
 - 在 myApp/tests.py 中写单元测试
 - settings.py 中提供了调试打印函数 `DBG`
