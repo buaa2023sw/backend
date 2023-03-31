@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from myApp import views as UserView
+from myApp import views
 
 from django.urls import re_path
 from django.conf import settings
@@ -27,4 +27,5 @@ from django.views.static import serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/userBindRepo', views.userBindRepo),
 ]
