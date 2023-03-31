@@ -5,20 +5,26 @@ class User(models.Model):
   name          = models.CharField(max_length=255)
   email         = models.EmailField(unique=True)
   password      = models.CharField(max_length=255)
+  NORMAL = 'A'
+  ILLEGAL = 'B'
+  ADMIN = 'C'
   STATUS_LIST = (
-    ('A', 'NORMAL'),
-    ('B', 'ILLEGAL'),
-    ('C', 'ADMIN'),
+    (NORMAL, 'NORMAL'),
+    (ILLEGAL, 'ILLEGAL'),
+    (ADMIN, 'ADMIN'),
   )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
   
 class Project(models.Model):
   id            = models.AutoField(primary_key=True)
   create_time   = models.DateTimeField(auto_now_add=True)
+  COMPLETED = 'A'
+  INPROGRESS = 'B'
+  NOTSTART = 'C'
   STATUS_LIST = (
-    ('A', 'COMPLETED'),
-    ('B', 'INPROGRESS'),
-    ('C', 'NOTSTART'),
+    (COMPLETED, 'COMPLETED'),
+    (INPROGRESS, 'INPROGRESS'),
+    (NOTSTART, 'NOTSTART'),
   )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
   name          = models.CharField(max_length=255)
@@ -31,10 +37,13 @@ class Task(models.Model):
   create_time   = models.DateTimeField(auto_now_add=True)
   deadline      = models.DateTimeField()
   outline       = models.TextField()
+  COMPLETED = 'A'
+  INPROGRESS = 'B'
+  NOTSTART = 'C'
   STATUS_LIST = (
-    ('A', 'COMPLETED'),
-    ('B', 'INPROGRESS'),
-    ('C', 'NOTSTART'),
+    (COMPLETED, 'COMPLETED'),
+    (INPROGRESS, 'INPROGRESS'),
+    (NOTSTART, 'NOTSTART'),
   )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
   contribute_level = models.IntegerField()
@@ -49,10 +58,13 @@ class Group(models.Model):
   
 class Message(models.Model):
   id            = models.AutoField(primary_key=True)
+  TEXT = 'A'
+  PIC = 'B'
+  FILE = 'C'
   TYPE_LIST = (
-    ('A', 'TEXT'),
-    ('B', 'PIC'),
-    ('C', 'FILE'),
+    (TEXT, 'TEXT'),
+    (PIC, 'PIC'),
+    (FILE, 'FILE'),
   )
   type          = models.CharField(max_length=2, choices=TYPE_LIST)
   content       = models.CharField(max_length=255) # TODO use FILE
@@ -84,10 +96,13 @@ class Repo(models.Model):
 class Progress(models.Model):
   id            = models.AutoField(primary_key=True)
   name          = models.CharField(max_length=255)
+  COMMIT = 'A'
+  ISSUE = 'B'
+  PR = 'C'
   TYPE_LIST = (
-    ('A', 'COMMIT'),
-    ('B', 'ISSUE'),
-    ('C', 'PR'),
+    (COMMIT, 'COMMIT'),
+    (ISSUE, 'ISSUE'),
+    (PR, 'PR'),
   )
   type          = models.CharField(max_length=2, choices=TYPE_LIST)
   remote_path   = models.CharField(max_length=255)
@@ -96,18 +111,22 @@ class Progress(models.Model):
 class UserProject(models.Model):
   user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
   project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  NORMAL = 'A'
+  ADMIN = 'B'
   ROLE_LIST = (
-    ('A', 'NORMAL'),
-    ('B', 'ADMIN'),
+    (NORMAL, 'NORMAL'),
+    (ADMIN, 'ADMIN'),
   )
   role          = models.CharField(max_length=2, choices=ROLE_LIST)
   
 class UserGroup(models.Model):
   user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
   group_id      = models.ForeignKey(Group, on_delete=models.CASCADE)
+  NORMAL = 'A'
+  ADMIN = 'B'
   ROLE_LIST = (
-    ('A', 'NORMAL'),
-    ('B', 'ADMIN'),
+    (NORMAL, 'NORMAL'),
+    (ADMIN, 'ADMIN'),
   )
   role          = models.CharField(max_length=2, choices=ROLE_LIST)
   
