@@ -11,10 +11,20 @@
 
 如果数据库提示表已存在或字段已存在错误，请删库并重新建库。(数据库名为 develop1 )
 
+## 数据库 rebuild
+
+目前自定义了 rebuilddb 命令来重置数据库信息，在项目根目录下执行：
+-  python manage.py rebuilddb 
+
+时，会先删除数据库所有表中的条目，将所有的自增 id 重置为 1，然后向数据库表中插入一些初始化条目，如 10 个 用户和 10 个项目。
+
+可以自行修改 `myApp/management/commands/rebuilddb.py` 中 `buildDataBase` 函数来初始化数据库信息。
+
 ## api 开发
 - 在 myApp/views.py 中添加视图函数
 - 在 djangoProject/urls.py 中添加视图函数 url
 - 在 myApp/tests.py 中写单元测试
+- settings.py 中提供了调试打印函数 `DBG`
 
 ## 运行后端项目：
 项目根目录下执行：
