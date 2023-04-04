@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+from enum import Enum
 from pathlib import Path
 
 import sys
@@ -180,4 +180,12 @@ def DBG(*args):
   if DEBUG_MODE == True:
     pt = "        DBG INFO: " +  str(args)
     print(pt)
-    
+
+
+from django.http import JsonResponse
+def response_json(errcode, message=None, data=None):
+    return JsonResponse({
+        'errcode': errcode,
+        'message': message,
+        'data': data,
+    })
