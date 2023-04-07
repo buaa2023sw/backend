@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from myApp import userdevelop
+from myApp import userdevelop, manager
 
 from django.urls import re_path
 from django.conf import settings
@@ -28,4 +28,20 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/userBindRepo', userdevelop.userBindRepo),
+    path('api/management/showUsers', manager.showUsers),
+    path('api/management/changeUserStatus', manager.changeUserStatus),
+    path('api/management/resetUserPassword', manager.resetUserPassword),
+    path('api/management/showAllProjects', manager.showAllProjects),
+    path('api/management/changeProjectStatus', manager.changeProjectStatus),
+    path('api/management/showUsersLogin', manager.showUsersLogin),
+    path('api/management/getUserNum', manager.getUserNum),
+    path('api/management/getProjectNum', manager.getProjectNum),
+    path('api/management/getProjectsScale', manager.getProjectsScale),
+    path('api/develop/getProjectName', userdevelop.getProjectName),
+    path('api/develop/getBindRepos', userdevelop.getBindRepos),
+    path('api/develop/userBindRepo', userdevelop.userBindRepo),
+    path('api/develop/userUnbindRepo', userdevelop.userUnbindRepo),
+    path('api/develop/getRepoBranches', userdevelop.getRepoBranches),
+    path('api/develop/getCommitHistory', userdevelop.getCommitHistory),
+    path('api/develop/getIssueList', userdevelop.getIssueList),
 ]

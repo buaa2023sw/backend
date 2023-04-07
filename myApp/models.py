@@ -5,6 +5,8 @@ class User(models.Model):
   name          = models.CharField(max_length=255)
   email         = models.EmailField(unique=True)
   password      = models.CharField(max_length=255)
+  create_time   = models.DateTimeField(auto_now_add=True)
+  last_login_time = models.DateTimeField()
   NORMAL = 'A'
   ILLEGAL = 'B'
   ADMIN = 'C'
@@ -18,13 +20,16 @@ class User(models.Model):
 class Project(models.Model):
   id            = models.AutoField(primary_key=True)
   create_time   = models.DateTimeField(auto_now_add=True)
+  progress      = models.IntegerField()
   COMPLETED = 'A'
   INPROGRESS = 'B'
   NOTSTART = 'C'
+  ILLEGAL = 'D'
   STATUS_LIST = (
     (COMPLETED, 'COMPLETED'),
     (INPROGRESS, 'INPROGRESS'),
     (NOTSTART, 'NOTSTART'),
+    (ILLEGAL, 'ILLEGAL'),
   )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
   name          = models.CharField(max_length=255)
@@ -147,4 +152,4 @@ class ProgressTask(models.Model):
   repo_id       = models.ForeignKey(Repo, on_delete=models.CASCADE)
   progress_id   = models.ForeignKey(Progress, on_delete=models.CASCADE)
 
-  
+# TODO : add enum check in function
