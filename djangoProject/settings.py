@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-2bo1p8f=2rybk-&)5qo$5%ahm^l0&ht0z7qv5(8=1*=1kc3^^s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # 配置 MEDIA_ROOT 作为你上传文件在服务器中的基本路径
 #MEDIA_ROOT = os.path.join(BASE_DIR, 'static/upload') # 注意此处不要写成列表或元组的形式
@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'myApp',
     # 'imagekit'
 ]
@@ -56,7 +57,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    # 'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
 
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -166,6 +167,12 @@ STATICFILES_DIRS = [
 ]
 
 STATIC_URL = '/static/'
+
+# Allowed_hosts
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_HEADERS = ('*')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
