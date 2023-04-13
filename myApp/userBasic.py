@@ -16,12 +16,20 @@ class UserBasicMessage(Enum):
     Register_Success = '注册成功！'
     Login_Success = '登录成功！'
     Email_Duplicated = ''
-    Username_Duplicated = ''
+    Username_Duplicated = 'nin'
     None_Existed_User = ''
     Password_Wrong = ''
     Invalid_Status = ''
     Modification_Failed = ''
     Modification_Success = '更改密码成功！'
+
+Username_Duplicated_Message = 'nin'
+
+
+def testtesttest(request):
+    return response_json(
+        errcode = 0,
+        message = 'this is test')
 
 
 def register(request):
@@ -31,10 +39,12 @@ def register(request):
         2. check whether have duplicated email.
     """
     username, email = request.POST.get('username'), request.POST.get('email')
+    print('yesyesyes')
+    print(username, email)
 
     # Step 1. Check
     users = User.objects.filter(email=email)
-    if len(users) == 0:
+    if not len(users) == 0:
         return response_json(
             errcode = UserBasicErrCode.Email_Duplicated,
             message = UserBasicMessage.Email_Duplicated
@@ -44,7 +54,7 @@ def register(request):
     users = User.objects.filter(name=username)
     if len(users) == 0:
         return response_json(
-            errcode = UserBasicErrCode.Username_Duplicated,
+            errcode = Username_Duplicated,
             message = UserBasicMessage.Username_Duplicated
         )
 

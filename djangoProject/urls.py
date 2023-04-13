@@ -28,4 +28,5 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/userBindRepo', userdevelop.userBindRepo),
+    path('api/', include('myApp.urls'))
 ]

@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
+import json
 from enum import Enum
 from pathlib import Path
 
@@ -91,21 +92,21 @@ WSGI_APPLICATION = 'djangoProject.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {
-    #'default': {
-    #    'ENGINE': 'django.db.backends.sqlite3',
-    #    'NAME': BASE_DIR / 'db.sqlite3',
-    #}
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'develop1',
-        'USER': 'Everybody',
-        'PASSWORD': 'SeinHeisstWerden,LebenHeisstLernen',
-        'PORT' : '3306',
-        'HOST': 'buaa2023sw.mysql.database.azure.com',
-        'OPTIONS' : {
-          'ssl' : {'ca' : './djangoProject/DigiCertGlobalRootCA.crt.pem'}
-        }
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+    #'default': {
+    #    'ENGINE': 'django.db.backends.mysql',
+    #    'NAME': 'develop1',
+    #    'USER': 'Everybody',
+    #    'PASSWORD': 'SeinHeisstWerden,LebenHeisstLernen',
+    #    'PORT' : '3306',
+    #    'HOST': 'buaa2023sw.mysql.database.azure.com',
+    #    'OPTIONS' : {
+    #      'ssl' : {'ca' : './djangoProject/DigiCertGlobalRootCA.crt.pem'}
+    #    }
+    # }
 }
 LOGGING = {
     'version': 1,
@@ -184,8 +185,8 @@ def DBG(*args):
 
 from django.http import JsonResponse
 def response_json(errcode, message=None, data=None):
-    return JsonResponse({
+    return JsonResponse(json.dumps({
         'errcode': errcode,
         'message': message,
         'data': data,
-    })
+    }))
