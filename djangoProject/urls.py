@@ -44,4 +44,5 @@ urlpatterns = [
     path('api/develop/getRepoBranches', userdevelop.getRepoBranches),
     path('api/develop/getCommitHistory', userdevelop.getCommitHistory),
     path('api/develop/getIssueList', userdevelop.getIssueList),
+    path('api/develop/getPrList', userdevelop.getPrList),
 ]

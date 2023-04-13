@@ -70,7 +70,7 @@ def getBindRepos(request):
   
   descLogName = "getRepoDesc.log"
   try:
-    userProjectRepos = UserProjectRepo.objects.filter(user_id=userId,project_id=projectId)
+    userProjectRepos = UserProjectRepo.objects.filter(project_id=projectId)
     for userProjectRepo in userProjectRepos:
       repoId = userProjectRepo.repo_id.id
       repo = Repo.objects.get(id=repoId)
@@ -110,7 +110,7 @@ def userBindRepo(request):
       if len(s) != 0:
         localHasRepo = True
         repoId = s[0].id
-        userProjectRepo = UserProjectRepo.objects.filter(user_id=userId, project_id=projectId, repo_id=repoId)
+        userProjectRepo = UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId)
         if len(userProjectRepo) != 0:
           return JsonResponse(genResponseStateInfo(response, 4, "duplicate repo"))
       # clone & repo
@@ -184,8 +184,8 @@ def getRepoBranches(request):
   if userProject == None:
     return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
   
-  if not UserProjectRepo.objects.filter(user_id=userId, project_id=projectId, repo_id=repoId).exists():
-    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project that bind by this user"))
+  if not UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId).exists():
+    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project"))
   
   data = []
   try:
@@ -229,8 +229,8 @@ def getCommitHistory(request):
   if userProject == None:
     return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
   
-  if not UserProjectRepo.objects.filter(user_id=userId, project_id=projectId, repo_id=repoId).exists():
-    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project that bind by this user"))
+  if not UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId).exists():
+    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project"))
   
   data = []
   try:
@@ -259,8 +259,8 @@ def getIssueList(request):
   if userProject == None:
     return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
   
-  if not UserProjectRepo.objects.filter(user_id=userId, project_id=projectId, repo_id=repoId).exists():
-    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project that bind by this user"))
+  if not UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId).exists():
+    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project"))
   
   data = []
   try:
@@ -276,6 +276,43 @@ def getIssueList(request):
                    "issueTime" : it["updated_at"],
                    "isOpen" : it["state"] == "open",
                    "ghLink" : it["html_url"]})
+    response["data"] = data
+  except Exception as e:
+    return genUnexpectedlyErrorInfo(response, e)
+  return JsonResponse(response)
+
+def getPrList(request):
+  DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  response = {}
+  genResponseStateInfo(response, 0, "get pr list ok")
+  userId = request.POST.get('userId')
+  projectId = request.POST.get('projectId')
+  repoId = request.POST.get('repoId')
+  project = isProjectExists(projectId)
+  if project == None:
+    return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
+  userProject = isUserInProject(userId, projectId)
+  if userProject == None:
+    return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
+  
+  if not UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId).exists():
+    return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project"))
+  
+  data = []
+  try:
+    log = "getPrList.log"
+    remotePath = Repo.objects.get(id=repoId).remote_path
+    os.system("gh api  /repos/" + remotePath + "/pulls > " + os.path.join(USER_REPOS_DIR, log))
+    ghInfo = json.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
+    for it in ghInfo:
+      data.append({"prId" : it["number"],
+                   "prIssuer" : it["user"]["login"],
+                   "prTitle" : it["title"],
+                   "prTime" : it["updated_at"],
+                   "isOpen" : it["state"] == "open",
+                   "ghLink" : it["html_url"],
+                   "fromBranchName" : it["head"]["ref"],
+                   "toBranchName" : it["base"]["ref"]})
     response["data"] = data
   except Exception as e:
     return genUnexpectedlyErrorInfo(response, e)
