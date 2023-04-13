@@ -68,14 +68,22 @@ def getBindRepos(request):
   if userProject == None:
     return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
   
+  descLogName = "getRepoDesc.log"
   try:
     userProjectRepos = UserProjectRepo.objects.filter(user_id=userId,project_id=projectId)
     for userProjectRepo in userProjectRepos:
       repoId = userProjectRepo.repo_id.id
       repo = Repo.objects.get(id=repoId)
+      
+      os.system("gh repo view " + repo.remote_path + " | grep description > " + os.path.join(USER_REPOS_DIR, descLogName))
+      desc = open(os.path.join(USER_REPOS_DIR, descLogName), "r").readlines()[0]
+      desc = desc.split(":", 2)[1].strip()
+      if desc.isspace():
+        desc = None
       response["data"].append({"repoId" : repoId, 
                               "repoRemotePath" : repo.remote_path,
-                              "repoIntroduction" : repo.name})
+                              "name" : repo.name,
+                              "repoIntroduction" : desc})
   except Exception as e:
     return JsonResponse(genUnexpectedlyErrorInfo(response, e))
   
@@ -182,12 +190,25 @@ def getRepoBranches(request):
   data = []
   try:
     log = "getRepoBranches.log"
+    commitLog = "commitInfo.log"
     remotePath = Repo.objects.get(id=repoId).remote_path
     os.system("gh api -H \"Accept: application/vnd.github+json\" -H \
               \"X-GitHub-Api-Version: 2022-11-28\" /repos/" + remotePath + "/branches > " + os.path.join(USER_REPOS_DIR, log))
     ghInfo = json.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
     for it in ghInfo:
-      data.append({"branchName" : it["name"]})
+      sha = it["commit"]["sha"]
+      cmd = "gh api /repos/" + remotePath + "/commits/" + sha + " > " + os.path.join(USER_REPOS_DIR, commitLog)
+      os.system(cmd)
+      commitInfo = json.load(open(os.path.join(USER_REPOS_DIR, commitLog), encoding="utf-8"))
+      data.append({"branchName" : it["name"],
+                    "lastCommit" : {
+                      "sha" : sha,
+                      "authorName" : commitInfo["commit"]["author"]["name"],
+                      "authorEmail" : commitInfo["commit"]["author"]["email"],
+                      "commitDate" : commitInfo["commit"]["author"]["date"],
+                      "commitMessage" : commitInfo["commit"]["message"]
+                    }
+                    })
     response["data"] = data
   except Exception as e:
     return genUnexpectedlyErrorInfo(response, e)
@@ -249,7 +270,8 @@ def getIssueList(request):
               \"X-GitHub-Api-Version: 2022-11-28\" /repos/" + remotePath + "/issues > " + os.path.join(USER_REPOS_DIR, log))
     ghInfo = json.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
     for it in ghInfo:
-      data.append({"issuer" : it["user"]["login"],
+      data.append({"issueId" : it["number"],
+                   "issuer" : it["user"]["login"],
                    "issueTitle" : it["title"],
                    "issueTime" : it["updated_at"],
                    "isOpen" : it["state"] == "open",
