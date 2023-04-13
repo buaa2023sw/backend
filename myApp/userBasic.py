@@ -1,5 +1,5 @@
 from myApp.models import User
-from django.http import JsonResponse
+from djangoProject.settings import response_json
 
 
 # 返回给前端的 ErrorCode
@@ -22,13 +22,6 @@ Password_Wrong_Message = ''
 Invalid_Status_Message = ''
 Modification_Failed_Message = ''
 Modification_Success_Message = '更改密码成功！'
-
-def response_json(errcode, message=None, data=None):
-    return JsonResponse({
-        'errcode': errcode,
-        'message': message,
-        'data': data,
-    })
 
 
 def testtesttest(request):
