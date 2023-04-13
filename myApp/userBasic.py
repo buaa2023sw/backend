@@ -1,27 +1,33 @@
-from enum import Enum
-
-from djangoProject.settings import response_json
 from myApp.models import User
+from djangoProject.settings import response_json
 
-class UserBasicErrCode(Enum):
-    Success = 0
-    Email_Duplicated = 2
-    Username_Duplicated = 3
-    None_Existed_User = 1
-    Password_Wrong = 2
-    Invalid_Status = 3
-    Modification_Failed = 1
 
-class UserBasicMessage(Enum):
-    Register_Success = '注册成功！'
-    Login_Success = '登录成功！'
-    Email_Duplicated = ''
-    Username_Duplicated = ''
-    None_Existed_User = ''
-    Password_Wrong = ''
-    Invalid_Status = ''
-    Modification_Failed = ''
-    Modification_Success = '更改密码成功！'
+# 返回给前端的 ErrorCode
+Success = 0
+Email_Duplicated = 2
+Username_Duplicated = 3
+None_Existed_User = 1
+Password_Wrong = 2
+Invalid_Status = 3
+Modification_Failed = 1
+
+
+# 返回给前端的信息
+Register_Success_Message = '注册成功！'
+Login_Success_Message = '登录成功！'
+Email_Duplicated_Message = ''
+Username_Duplicated_Message = 'nin'
+None_Existed_User_Message = ''
+Password_Wrong_Message = ''
+Invalid_Status_Message = ''
+Modification_Failed_Message = ''
+Modification_Success_Message = '更改密码成功！'
+
+
+def testtesttest(request):
+    return response_json(
+        errcode = 0,
+        message = 'this is test')
 
 
 def register(request):
@@ -31,21 +37,23 @@ def register(request):
         2. check whether have duplicated email.
     """
     username, email = request.POST.get('username'), request.POST.get('email')
+    print('yesyesyes')
+    print(username, email)
 
     # Step 1. Check
     users = User.objects.filter(email=email)
-    if len(users) == 0:
+    if not len(users) == 0:
         return response_json(
-            errcode = UserBasicErrCode.Email_Duplicated,
-            message = UserBasicMessage.Email_Duplicated
+            errcode = Email_Duplicated,
+            message = Email_Duplicated_Message
         )
 
     # Step 2. Check
     users = User.objects.filter(name=username)
     if len(users) == 0:
         return response_json(
-            errcode = UserBasicErrCode.Username_Duplicated,
-            message = UserBasicMessage.Username_Duplicated
+            errcode = Username_Duplicated,
+            message = Username_Duplicated_Message
         )
 
     # Step 3. Create
@@ -53,8 +61,8 @@ def register(request):
              email=email, status=User.NORMAL)
     u.save()
     return response_json(
-        errcode = UserBasicErrCode.Success,
-        message = UserBasicMessage.Register_Success
+        errcode = Success,
+        message = Register_Success_Message
     )
 
 
@@ -69,30 +77,30 @@ def login(request):
     user = User.objects.filter(name=request.POST.get('username'))
     if len(user) == 0:
         return response_json(
-            errcode = UserBasicErrCode.None_Existed_User,
-            message = UserBasicMessage.None_Existed_User
+            errcode = None_Existed_User,
+            message = None_Existed_User_Message
         )
 
     # Step 2. Check
     user = user.first()
     if user.status == User.ILLEGAL:
         return response_json(
-            errcode = UserBasicErrCode.Invalid_Status,
-            message = UserBasicMessage.Invalid_Status
+            errcode = Invalid_Status,
+            message = Invalid_Status_Message
         )
 
     # Step 3. Check
     if not user.password == request.POST.get('request'):
         return response_json(
-            errcode = UserBasicErrCode.Password_Wrong,
-            message = UserBasicMessage.Password_Wrong
+            errcode = Password_Wrong,
+            message = Password_Wrong_Message
         )
 
     # Step 4. Login & Session
     request.session['userId'] = user.id
     return response_json(
-        errcode = UserBasicErrCode.Success,
-        message = UserBasicMessage.Login_Success
+        errcode = Success,
+        message = Login_Success_Message
     )
 
 
@@ -109,25 +117,25 @@ def modify_password(request):
     user = User.objects.get(id=int(request.POST.get('userId')))
     if user is None:
         return response_json(
-            errcode = UserBasicErrCode.Modification_Failed,
-            message = UserBasicMessage.Modification_Failed
+            errcode = Modification_Failed,
+            message = Modification_Failed_Message
         )
 
     if not user.password == request.POST.get('oldPassword'):
         return response_json(
-            errcode = UserBasicErrCode.Modification_Failed,
-            message = UserBasicMessage.Modification_Failed
+            errcode = Modification_Failed,
+            message = Modification_Failed_Message
         )
 
     try:
         user.password = request.POST.get('newPassword')
         user.save()
         return response_json(
-            errcode = UserBasicErrCode.Success,
-            message = UserBasicMessage.Modification_Success
+            errcode = Success,
+            message = Modification_Success_Message
         )
     except Exception as exp:
         return response_json(
-            errcode = UserBasicErrCode.Modification_Failed,
-            message = UserBasicMessage.Modification_Failed
+            errcode = Modification_Failed,
+            message = Modification_Failed_Message
         )

@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from myApp import userdevelop, manager
+from myApp import userdevelop, manager, userBasic
 
 from django.urls import re_path
 from django.conf import settings
@@ -45,4 +45,7 @@ urlpatterns = [
     path('api/develop/getCommitHistory', userdevelop.getCommitHistory),
     path('api/develop/getIssueList', userdevelop.getIssueList),
     path('api/develop/getPrList', userdevelop.getPrList),
+    path('api/register', userBasic.register),
+    path('api/login', userBasic.login),
+    path('api/user/information/password', userBasic.modify_password),
 ]
