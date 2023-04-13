@@ -182,11 +182,3 @@ def DBG(*args):
     pt = "        DBG INFO: " +  str(args)
     print(pt)
 
-
-from django.http import JsonResponse
-def response_json(errcode, message=None, data=None):
-    return JsonResponse(json.dumps({
-        'errcode': errcode,
-        'message': message,
-        'data': data,
-    }))
