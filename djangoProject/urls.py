@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from myApp import userdevelop, manager, userBasic, userplan
+from myApp import userdevelop, manager, userBasic, userPlan
 
 from django.urls import re_path
 from django.conf import settings
@@ -48,16 +48,16 @@ urlpatterns = [
     path('api/register', userBasic.register),
     path('api/login', userBasic.login),
     path('api/user/information/password', userBasic.modify_password),
-    path('api/plan/newProject', userplan.newProject.as_view()),
-    path('api/plan/watchAllProject', userplan.watchAllProject.as_view()),
-    path('api/plan/addTask', userplan.addTask.as_view()),
-    path('api/plan/addSubTask', userplan.addSubTask.as_view()),
-    path('api/plan/showTaskList', userplan.showTaskList.as_view()),
-    path('api/plan/modifyTaskContent', userplan.modifyTaskContent.as_view()),
-    path('api/plan/showPersonList', userplan.showPersonList.as_view()),
-    path('api/plan/modifyRole', userplan.modifyRole.as_view()),
-    path('api/plan/addMember', userplan.addMember.as_view()),
-    path('api/plan/removeMember', userplan.removeMember.as_view()),
-    path('api/plan/deleteProject', userplan.deleteProject.as_view()),
-    path('api/plan/modifyProject', userplan.modifyProject.as_view()),
+    path('api/plan/newProject', userPlan.newProject.as_view()),
+    path('api/plan/watchAllProject', userPlan.watchAllProject.as_view()),
+    path('api/plan/addTask', userPlan.addTask.as_view()),
+    path('api/plan/addSubTask', userPlan.addSubTask.as_view()),
+    path('api/plan/showTaskList', userPlan.showTaskList.as_view()),
+    path('api/plan/modifyTaskContent', userPlan.modifyTaskContent.as_view()),
+    path('api/plan/showPersonList', userPlan.showPersonList.as_view()),
+    path('api/plan/modifyRole', userPlan.modifyRole.as_view()),
+    path('api/plan/addMember', userPlan.addMember.as_view()),
+    path('api/plan/removeMember', userPlan.removeMember.as_view()),
+    path('api/plan/deleteProject', userPlan.deleteProject.as_view()),
+    path('api/plan/modifyProject', userPlan.modifyProject.as_view()),
 ]
