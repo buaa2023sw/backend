@@ -62,8 +62,8 @@ class Command(BaseCommand):
       userProjectlist.append(UserProject(user_id=user, project_id=project))
     UserProject.objects.bulk_create(userProjectlist)
     
-    Repo(name="repo1",local_path="repo1_local_path",remote_path="repo1_remote_path").save()
-    UserProjectRepo(user_id=User.objects.get(id=2),project_id=Project.objects.get(id=1),repo_id=Repo.objects.get(id=1)).save()
+    # Repo(name="repo1",local_path="repo1_local_path",remote_path="repo1_remote_path").save()
+    # UserProjectRepo(user_id=User.objects.get(id=2),project_id=Project.objects.get(id=1),repo_id=Repo.objects.get(id=1)).save()
   
   def handle(self, *args, **options):
     # self.clearDataBase()
