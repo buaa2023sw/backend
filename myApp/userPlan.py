@@ -1,14 +1,16 @@
 from django.http import JsonResponse
-from django.core import serializers
 from myApp.models import *
 from django.views import View
 import json
 import datetime
 
 
+# --------------------project level--------------------
+
+
 class newProject(View):
     def post(self, request):
-        response = {'message': "404 not success"}
+        response = {'message': "404 not success", "errcode": 1}
 
         try:
             kwargs: dict = json.loads(request.body)
@@ -17,12 +19,6 @@ class newProject(View):
 
         projectName = kwargs.get("projectName")
         projectIntro = kwargs.get("projectIntro")
-
-        # check if request.user is anaoymous
-        # if request.user.is_authenticated:
-        #     response['errcode'] = 1
-        #     response['message'] = "user not login"
-        #     return JsonResponse(response)
 
         project = Project.objects.create(name=projectName, outline=projectIntro, manager_id=request.user, status='C')
         project.save()
@@ -35,17 +31,19 @@ class newProject(View):
 
 class watchAllProject(View):
     def get(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
         userProjectRepo = UserProject.objects.filter(user_id=request.user)
         projectList = []
         for i in userProjectRepo:
             projectList.append({
-                "id": i.project_id.id,
-                "name": i.project_id.name,
-                "outline": i.project_id.outline,
-                "status": i.project_id.status,
-                "time": [i.project_id.create_time.year, i.project_id.create_time.month, i.project_id.create_time.day],
-                "manageId": i.project_id.manager_id.id,
+                "projectId": i.project_id.id,
+                "projectName": i.project_id.name,
+                "projectIntro": i.project_id.outline,
+                "state": i.project_id.status,
+                "deadline": str(i.project_id.create_time.year) + "-" + str(i.project_id.create_time.month) + "-" + str(
+                    i.project_id.create_time.day),
+                "managerId": i.project_id.manager_id.id,
+                "managerName": i.project_id.manager_id.name,
             })
         response['errcode'] = 0
         response['message'] = "success"
@@ -53,49 +51,92 @@ class watchAllProject(View):
         return JsonResponse(response)
 
 
-class addTask(View):
+class deleteProject(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
+
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
-        #### 添加任务
-        # * parameter format
-        # *`time`：int数组[year, month, day]
-        # *`contribute`：int
-        # *`people`：int数组[id1, id2, ...]
-        #
 
-        time = kwargs.get("time", [1999, 1, 1])
-        contribute = kwargs.get("contribute", 0)
-        people = kwargs.get("people", [])
-        name = kwargs.get("name", "")
+        projectId = kwargs.get("projectId", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        Project.objects.filter(id=projectId).delete()
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
+
+class modifyProject(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        projectName = kwargs.get("projectName", "")
+        if projectName != "":
+            project = Project.objects.get(id=projectId)
+            project.name = projectName
+            project.save()
+
+        projectOutline = kwargs.get("projectIntro", "")
+        if projectOutline != "":
+            project = Project.objects.get(id=projectId)
+            project.outline = projectOutline
+            project.save()
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
+
+# ----------------------task level----------------------
+
+
+class addTask(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        name = kwargs.get("TaskName", "")
         projectId = kwargs.get("projectId", 0)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
+
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.ADMIN).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "permission denied"
+            response['data'] = None
+            return JsonResponse(response)
+
         project = Project.objects.get(id=projectId)
-        for i in people:
-            if User.objects.filter(id=i).count() == 0:
-                response['errcode'] = 1
-                response['message'] = "user not exist"
-                response['data'] = None
-                return JsonResponse(response)
-        # use time[0] as year time[1] as month time[2] as day
-        deadline = datetime.datetime(year=time[0], month=time[1], day=time[2])
-        task = Task.objects.create(name=name, deadline=deadline, contribute_level=contribute, project_id=project)
+        task = Task.objects.create(name=name, project_id=project)
         task.status = Task.NOTSTART
         task.save()
-        for i in people:
-            if User.objects.filter(id=i).count() == 0:
-                response['errcode'] = 1
-                response['message'] = "no such people:" + str(i)
-                response['data'] = None
-                return JsonResponse(response)
-            UserTask.objects.create(user_id=User.objects.get(id=i), task_id=task)
+
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
@@ -104,37 +145,49 @@ class addTask(View):
 
 class addSubTask(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
-        time = kwargs.get("time", [1999, 1, 1])
+
+        time = kwargs.get("deadline", [1999, 1, 1])
         contribute = kwargs.get("contribute", 0)
-        people = kwargs.get("people", [])
-        name = kwargs.get("name", "")
+        name = kwargs.get("subTaskName", "")
         projectId = kwargs.get("projectId", -1)
-        belongTask = kwargs.get("belongTask", -1)
+        belongTask = kwargs.get("fatherTaskId", -1)
+        managerId = kwargs.get("managerId", -1)
+
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
-        for i in people:
-            if User.objects.filter(id=i).count() == 0:
-                response['errcode'] = 1
-                response['message'] = "user not exist"
-                response['data'] = None
-                return JsonResponse(response)
+        if Task.objects.filter(id=belongTask).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task not exist"
+            response['data'] = None
+            return JsonResponse(response)
+        if User.objects.filter(id=managerId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "user not exist"
+            response['data'] = None
+            return JsonResponse(response)
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.ADMIN).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "permission denied"
+            response['data'] = None
+            return JsonResponse(response)
+
         # use time[0] as year time[1] as month time[2] as day
         deadline = datetime.datetime(year=time[0], month=time[1], day=time[2])
         task = Task.objects.create(name=name, deadline=deadline, contribute_level=contribute, project_id_id=projectId,
                                    parent_id_id=belongTask)
-
         task.status = Task.NOTSTART
         task.save()
-        for i in people:
-            UserTask.objects.create(user_id_id=i, task_id=task)
+
+        UserTask.objects.create(user_id_id=managerId, task_id=task)
+
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
@@ -143,89 +196,195 @@ class addSubTask(View):
 
 class showTaskList(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
+
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
+
         projectId = kwargs.get("projectId", -1)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
-        taskList = Task.objects.filter(project_id_id=projectId)
-        taskList = serializers.serialize("json", taskList)
-        print(taskList)
-        # TODO: testsub Task
+
+        taskList = Task.objects.filter(project_id_id=projectId, parent_id=None)
+        data = []
+        for i in taskList:
+            tmp = {"taskName": i.name, "taskId": i.id}
+            subTasks = Task.objects.filter(parent_id=i)
+            subTaskList = []
+            for j in subTasks:
+                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
+                           "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id}
+                subTaskList.append(sub_tmp)
+            tmp["subTaskList"] = subTaskList
+            data.append(tmp)
         response['errcode'] = 0
         response['message'] = "success"
-        response['data'] = taskList
+        response['data'] = data
         return JsonResponse(response)
 
 
 class modifyTaskContent(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
+
         taskId = kwargs.get("taskId", -1)
+        deadline = kwargs.get("deadline", [1999, 1, 1])
+        contribute = kwargs.get("contribute", 0)
+        taskName = kwargs.get("taskName", "")
         if Task.objects.filter(id=taskId).count() == 0:
             response['errcode'] = 1
             response['message'] = "task not exist"
             response['data'] = None
             return JsonResponse(response)
         task = Task.objects.get(id=taskId)
-        key = kwargs.get("key", "")
-        if "value" not in kwargs:
-            response['errcode'] = 1
-            response['message'] = "value not exist"
+
+        projectId = task.project_id_id
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.ADMIN).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
-        value = kwargs.get("value", "")
-        if key == "name":
-            task.name = value
-        elif key == "contribute":
-            task.contribute = value
-        elif key == "deadline":
-            task.deadline = datetime.datetime(year=value[0], month=value[1], day=value[2])
-        elif key == "status":
-            task.status = value
-        else:
-            response['errcode'] = 1
-            response['message'] = "key not exist"
-            response['data'] = None
-            return JsonResponse(response)
+        task.deadline = datetime.datetime(year=deadline[0], month=deadline[1], day=deadline[2])
+        task.contribute_level = contribute
+        task.name = taskName
         task.save()
+
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
         return JsonResponse(response)
 
 
-class showPersonList(View):
+class completeTask(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
+
+        taskId = kwargs.get("taskId", -1)
+        if Task.objects.filter(id=taskId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        task = Task.objects.get(id=taskId)
+        projectId = task.project_id_id
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId,
+                                      role=UserProject.ADMIN).count() == 0 and UserTask.objects.filter(
+            user_id=request.user, task_id=taskId).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "permission denied"
+            response['data'] = None
+            return JsonResponse(response)
+        task.status = Task.COMPLETED
+        task.save()
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
+
+class watchMyTask(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
         projectId = kwargs.get("projectId", -1)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
+
+        taskList = Task.objects.filter(project_id_id=projectId, parent_id=None)
+
+        data = []
+        for i in taskList:
+            tmp = {"taskName": i.name, "taskId": i.id}
+            subTasks = UserTask.objects.filter(user_id=request.user, task_id__parent_id=i)
+            subTaskList = []
+            for j in subTasks:
+                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
+                           "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id}
+                subTaskList.append(sub_tmp)
+            tmp["subTaskList"] = subTaskList
+            data.append(tmp)
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = data
+        return JsonResponse(response)
+
+
+class notice(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        taskId = kwargs.get("taskId", -1)
+        deadline = kwargs.get("deadline", [1999, 1, 1])
+        if Task.objects.filter(id=taskId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        msg = Notice.objects.create(belongingTask_id=taskId,
+                                    deadline=datetime.datetime(year=deadline[0], month=deadline[1], day=deadline[2]))
+        msg.save()
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
+
+# ----------member level---------------------------
+
+
+class showPersonList(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
         personList = UserProject.objects.filter(project_id_id=projectId)
         res = []
         for person in personList:
             res.append({
-                "peopleID": person.user_id.id,
+                "peopleId": person.user_id.id,
                 "peopleName": person.user_id.name,
                 "peopleJob": person.role
             })
+
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = res
@@ -234,29 +393,40 @@ class showPersonList(View):
 
 class modifyRole(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
+
         projectId = kwargs.get("projectId", -1)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
-        peopleId = kwargs.get("peopleId", -1)
+
+        peopleId = kwargs.get("personId", -1)
         if User.objects.filter(id=peopleId).count() == 0:
             response['errcode'] = 1
             response['message'] = "user not exist"
             response['data'] = None
             return JsonResponse(response)
+
         role = kwargs.get("role", "")
-        if role not in [UserProject.ADMIN, UserProject.NORMAL]:
+        if role not in [UserProject.ADMIN, UserProject.NORMAL, UserProject.DEVELOPER]:
             response['errcode'] = 1
             response['message'] = "role not exist"
             response['data'] = None
             return JsonResponse(response)
+
+        if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
+                                      role=UserProject.NORMAL).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "user not admin"
+            response['data'] = None
+            return JsonResponse(response)
+
         userProject = UserProject.objects.get(user_id=peopleId, project_id=projectId)
         userProject.role = role
         userProject.save()
@@ -268,28 +438,39 @@ class modifyRole(View):
 
 class addMember(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 1, 'message': "404 not success"}
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
+
         projectId = kwargs.get("projectId", -1)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
-        peopleId = kwargs.get("peopleId", -1)
+
+        peopleId = kwargs.get("personId", -1)
         if User.objects.filter(id=peopleId).count() == 0:
             response['errcode'] = 1
             response['message'] = "user not exist"
             response['data'] = None
             return JsonResponse(response)
+
         if UserProject.objects.filter(user_id_id=peopleId, project_id_id=projectId).count() != 0:
-            response['errcode'] = 1
+            response['errcode'] = 2
             response['message'] = "user already in project"
             response['data'] = None
             return JsonResponse(response)
+
+        if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
+                                      role=UserProject.ADMIN).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "user not admin"
+            response['data'] = None
+            return JsonResponse(response)
+
         UserProject.objects.create(user_id_id=peopleId, project_id_id=projectId, role=UserProject.NORMAL)
         response['errcode'] = 0
         response['message'] = "success"
@@ -299,78 +480,40 @@ class addMember(View):
 
 class removeMember(View):
     def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
+        response = {'errcode': 0, 'message': "404 not success"}
         try:
             kwargs: dict = json.loads(request.body)
         except Exception:
             return JsonResponse(response)
+
         projectId = kwargs.get("projectId", -1)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "project not exist"
             response['data'] = None
             return JsonResponse(response)
-        peopleId = kwargs.get("peopleId", -1)
+
+        peopleId = kwargs.get("personId", -1)
         if User.objects.filter(id=peopleId).count() == 0:
             response['errcode'] = 1
             response['message'] = "user not exist"
             response['data'] = None
             return JsonResponse(response)
+
         if UserProject.objects.filter(user_id=peopleId, project_id=projectId).count() == 0:
             response['errcode'] = 1
             response['message'] = "user not in project"
             response['data'] = None
             return JsonResponse(response)
+
+        if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
+                                      role=UserProject.ADMIN).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "user not admin"
+            response['data'] = None
+            return JsonResponse(response)
+
         UserProject.objects.filter(user_id_id=peopleId, project_id_id=projectId).delete()
-        response['errcode'] = 0
-        response['message'] = "success"
-        response['data'] = None
-        return JsonResponse(response)
-
-
-class deleteProject(View):
-    def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
-        try:
-            kwargs: dict = json.loads(request.body)
-        except Exception:
-            return JsonResponse(response)
-        projectId = kwargs.get("projectId", -1)
-        if Project.objects.filter(id=projectId).count() == 0:
-            response['errcode'] = 1
-            response['message'] = "project not exist"
-            response['data'] = None
-            return JsonResponse(response)
-        Project.objects.filter(id=projectId).delete()
-        response['errcode'] = 0
-        response['message'] = "success"
-        response['data'] = None
-        return JsonResponse(response)
-
-
-class modifyProject(View):
-    def post(self, request):
-        response = {'errcode': 0, 'success': False, 'message': "404 not success"}
-        try:
-            kwargs: dict = json.loads(request.body)
-        except Exception:
-            return JsonResponse(response)
-        projectId = kwargs.get("projectId", -1)
-        if Project.objects.filter(id=projectId).count() == 0:
-            response['errcode'] = 1
-            response['message'] = "project not exist"
-            response['data'] = None
-            return JsonResponse(response)
-        projectName = kwargs.get("name", "")
-        if projectName != "":
-            project = Project.objects.get(id=projectId)
-            project.name = projectName
-            project.save()
-        projectOutline = kwargs.get("outline", "")
-        if projectOutline != "":
-            project = Project.objects.get(id=projectId)
-            project.outline = projectOutline
-            project.save()
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None

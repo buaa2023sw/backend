@@ -60,7 +60,13 @@ class Group(models.Model):
   name          = models.CharField(max_length=255)
   outline       = models.TextField()
   project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
-  
+
+class Notice(models.Model):
+  id            = models.AutoField(primary_key=True)
+  belongingTask          = models.ForeignKey(Task, on_delete=models.CASCADE)
+  deadline      = models.DateTimeField()
+  content       = models.TextField()
+
 class Message(models.Model):
   id            = models.AutoField(primary_key=True)
   TEXT = 'A'
