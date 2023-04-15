@@ -30,7 +30,7 @@ class newProject(View):
 
 
 class watchAllProject(View):
-    def get(self, request):
+    def post(self, request):
         response = {'errcode': 1, 'message': "404 not success"}
         userProjectRepo = UserProject.objects.filter(user_id=request.user)
         projectList = []
