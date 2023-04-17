@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from myApp import userdevelop, manager, userBasic, userPlan
+from myApp import userdevelop, manager, userBasic, userPlan, debug
 
 from django.urls import re_path
 from django.conf import settings
@@ -28,15 +28,15 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/userBindRepo', userdevelop.userBindRepo),
-    path('api/management/showUsers', manager.showUsers),
-    path('api/management/changeUserStatus', manager.changeUserStatus),
-    path('api/management/resetUserPassword', manager.resetUserPassword),
-    path('api/management/showAllProjects', manager.showAllProjects),
-    path('api/management/changeProjectStatus', manager.changeProjectStatus),
-    path('api/management/showUsersLogin', manager.showUsersLogin),
-    path('api/management/getUserNum', manager.getUserNum),
-    path('api/management/getProjectNum', manager.getProjectNum),
-    path('api/management/getProjectsScale', manager.getProjectsScale),
+    path('api/management/showUsers', manager.ShowUsers.as_view()),
+    path('api/management/changeUserStatus', manager.ChangeUserStatus.as_view()),
+    path('api/management/resetUserPassword', manager.ResetUserPassword.as_view()),
+    path('api/management/showAllProjects', manager.ShowAllProjects.as_view()),
+    path('api/management/changeProjectStatus', manager.ChangeProjectStatus.as_view()),
+    path('api/management/showUsersLogin', manager.ShowUsersLogin.as_view()),
+    path('api/management/getUserNum', manager.GetUserNum.as_view()),
+    path('api/management/getProjectNum', manager.GetProjectNum.as_view()),
+    path('api/management/getProjectsScale', manager.GetProjectScale.as_view()),
     path('api/develop/getProjectName', userdevelop.getProjectName),
     path('api/develop/getBindRepos', userdevelop.getBindRepos),
     path('api/develop/userBindRepo', userdevelop.userBindRepo),
@@ -63,4 +63,5 @@ urlpatterns = [
     path('api/plan/completeTask', userPlan.completeTask.as_view()),
     path('api/plan/notice', userPlan.notice.as_view()),
     path('api/plan/watchMyTask', userPlan.watchMyTask.as_view()),
+    path('api/echo', debug.echo),
 ]
