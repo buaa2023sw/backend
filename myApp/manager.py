@@ -47,7 +47,7 @@ class ShowUsers(View):
     #   return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
     allUsers = User.objects.all()
     for user in allUsers:
-      users.append({"name" : user.name, "email" : user.email, 
+      users.append({"id": user.id, "name" : user.name, "email" : user.email, 
                     "registerTime" : user.create_time, "status" : user.status})
       
     response["users"] = users
