@@ -20,7 +20,7 @@ class User(models.Model):
 class Project(models.Model):
   id            = models.AutoField(primary_key=True)
   create_time   = models.DateTimeField(auto_now_add=True)
-  progress      = models.IntegerField()
+  progress      = models.IntegerField(default=0)
   COMPLETED = 'A'
   INPROGRESS = 'B'
   NOTSTART = 'C'
