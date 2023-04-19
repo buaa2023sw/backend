@@ -109,6 +109,7 @@ def login(request):
         errcode = Success,
         message = Login_Success_Message,
         data = {
+            'status': user.status,
             'id': user.id,
             'name': user.name,
             'email': user.email,
