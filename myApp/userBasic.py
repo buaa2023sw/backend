@@ -1,5 +1,7 @@
 from myApp.models import User
 from djangoProject.settings import response_json
+import datetime
+import json
 
 
 # 返回给前端的 ErrorCode
@@ -36,7 +38,8 @@ def register(request):
         1. check whether have duplicated username.
         2. check whether have duplicated email.
     """
-    username, email = request.POST.get('username'), request.POST.get('email')
+    kwargs: dict = json.loads(request.body)
+    username, email = kwargs.get('username'), kwargs.get('email')
 
     # Step 1. Check
     users = User.objects.filter(email=email)
@@ -55,8 +58,10 @@ def register(request):
         )
 
     # Step 3. Create
-    u = User(name=username, password=request.POST.get('password'),
-             email=email, status=User.NORMAL)
+    u = User(name=username, password=kwargs.get('password'),
+             email=email, status=User.NORMAL,
+             create_time=datetime.datetime.now(),
+             last_login_time=datetime.datetime.now())
     u.save()
     return response_json(
         errcode = Success,
@@ -71,10 +76,11 @@ def login(request):
         2. Check whether the user has limit.
         2. Check password correct.
     """
+    kwargs: dict = json.loads(request.body)
     # Step 1. Check
-    user = User.objects.filter(name=request.POST.get('userNameOrEmail'))
+    user = User.objects.filter(name=kwargs.get('userNameOrEmail'))
     if len(user) == 0:
-        user = User.objects.filter(email=request.POST.get('userNameOrEmail'))
+        user = User.objects.filter(email=kwargs.get('userNameOrEmail'))
         if len(user) == 0:
             return response_json(
                 errcode = None_Existed_User,
@@ -90,7 +96,7 @@ def login(request):
         )
 
     # Step 3. Check
-    if not user.password == request.POST.get('password'):
+    if not user.password == kwargs.get('password'):
         return response_json(
             errcode = Password_Wrong,
             message = Password_Wrong_Message
@@ -119,23 +125,24 @@ def modify_password(request):
         2. Check user password correct, according to `oldPassword`.
         3. Modification.
     """
+    kwargs: dict = json.loads(request.body)
     # Step 0. Check, todo
     # Step 1. Check
-    user = User.objects.get(id=int(request.POST.get('userId')))
+    user = User.objects.get(id=int(kwargs.get('userId')))
     if user is None:
         return response_json(
             errcode = Modification_Failed,
             message = Modification_Failed_Message
         )
 
-    if not user.password == request.POST.get('oldPassword'):
+    if not user.password == kwargs.get('oldPassword'):
         return response_json(
             errcode = Modification_Failed,
             message = Modification_Failed_Message
         )
 
     try:
-        user.password = request.POST.get('newPassword')
+        user.password = kwargs.get('newPassword')
         user.save()
         return response_json(
             errcode = Success,
