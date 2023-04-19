@@ -124,11 +124,13 @@ class UserProject(models.Model):
   project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
   NORMAL = 'A'
   ADMIN = 'B'
+  DEVELOPER="C"
   ROLE_LIST = (
     (NORMAL, 'NORMAL'),
     (ADMIN, 'ADMIN'),
+    (DEVELOPER, 'DEVELOPER'),
   )
-  role          = models.CharField(max_length=2, choices=ROLE_LIST)
+  role          = models.CharField(max_length=3, choices=ROLE_LIST)
   
 class UserGroup(models.Model):
   user_id       = models.ForeignKey(User, on_delete=models.CASCADE)

@@ -23,7 +23,7 @@ class newProject(View):
         project = Project.objects.create(name=projectName, outline=projectIntro, manager_id=request.user, status='C')
         project.save()
 
-        UserProject.objects.create(user_id=request.user, project_id=project, role=UserProject.ADMIN)
+        UserProject.objects.create(user_id=request.user, project_id=project, role=UserProject.DEVELOPER)
         response['errcode'] = 0
         response['message'] = "success"
         return JsonResponse(response)
@@ -517,4 +517,27 @@ class removeMember(View):
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
+        return JsonResponse(response)
+
+class test(View):
+    def post(self, request):
+        response = {'errcode': 0, 'message': "404 not success"}
+        # try:
+        #     kwargs: dict = json.loads(request.body)
+        # except Exception:
+        #     return JsonResponse(response)
+        projects=Project.objects.all()
+        ids=[]
+        for i in projects:
+            tmp={"id":i.id}
+            u2p=UserProject.objects.filter(project_id=i.id)
+            roles=[]
+            for j in u2p:
+                roles.append(j.role)
+            tmp["roles"]=roles
+            ids.append(tmp)
+                
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = ids
         return JsonResponse(response)
