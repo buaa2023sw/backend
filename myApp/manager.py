@@ -43,10 +43,36 @@ class ShowUsers(View):
     genResponseStateInfo(response, 0, "get users ok")
     users = []
     managerId = kwargs.get('managerId')
-    # if not isAdmin(managerId):
-    #   return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
+    if not isAdmin(managerId):
+      return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
     allUsers = User.objects.all()
     for user in allUsers:
+      if user.status == user.ADMIN:
+        continue
+      users.append({"id": user.id, "name" : user.name, "email" : user.email, 
+                    "registerTime" : user.create_time, "status" : user.status})
+      
+    response["users"] = users
+    return JsonResponse(response)
+  
+class ShowAdmins(View):
+  def post(self, request):
+    DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    response = {}
+    genResponseStateInfo(response, 0, "get users ok")
+    users = []
+    managerId = kwargs.get('managerId')
+    if not isAdmin(managerId):
+      return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
+    allUsers = User.objects.all()
+    for user in allUsers:
+      if user.status != user.ADMIN:
+        continue
       users.append({"id": user.id, "name" : user.name, "email" : user.email, 
                     "registerTime" : user.create_time, "status" : user.status})
       
