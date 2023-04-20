@@ -143,7 +143,8 @@ class ShowAllProjects(View):
     allProjects = Project.objects.all()
     for project in allProjects:
       leader = User.objects.get(id=project.manager_id.id)
-      projects.append({"name" : project.name, "leader" : leader.name,
+      projects.append({"name" : project.name, "projectId" : project.id,
+                       "leader" : leader.name, "leaderId" : leader.id,
                       "email" : leader.email, "createTime" : project.create_time,
                       "progress" : project.progress, "status" : project.status})
     response["projects"] = projects
