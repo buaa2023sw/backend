@@ -34,6 +34,7 @@ urlpatterns = [
     path('api/management/resetUserPassword', manager.ResetUserPassword.as_view()),
     path('api/management/showAllProjects', manager.ShowAllProjects.as_view()),
     path('api/management/changeProjectStatus', manager.ChangeProjectStatus.as_view()),
+    path('api/management/changeProjectAccess', manager.ChangeProjectAccess.as_view()),
     path('api/management/showUsersLogin', manager.ShowUsersLogin.as_view()),
     path('api/management/getUserNum', manager.GetUserNum.as_view()),
     path('api/management/getProjectNum', manager.GetProjectNum.as_view()),
