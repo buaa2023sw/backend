@@ -48,8 +48,8 @@ class GetProjectName(View):
     genResponseStateInfo(response, 0, "get project name ok")
     response["data"] = {}
     response["data"]["name"] = ""
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
     project = isProjectExists(projectId)
     if project == None:
       return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
@@ -71,8 +71,8 @@ class GetBindRepos(View):
     response = {}
     genResponseStateInfo(response, 0, "get bind repos ok")
     response["data"] = []
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
     project = isProjectExists(projectId)
     if project == None:
       return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
@@ -111,8 +111,8 @@ class UserBindRepo(View):
         return JsonResponse(response)
       response = {}
       genResponseStateInfo(response, 0, "bind ok")
-      userId = kwargs.get('userId')
-      projectId = kwargs.get('projectId')
+      userId = str(kwargs.get('userId'))
+      projectId = str(kwargs.get('projectId'))
       repoRemotePath = kwargs.get('repoRemotePath')
       DBG("userId=" + userId + " projectId=" + projectId + " repoRemotePath=" + repoRemotePath)
       project = isProjectExists(projectId)
@@ -172,9 +172,9 @@ class UserUnbindRepo(View):
       return JsonResponse(response)
     response = {}
     genResponseStateInfo(response, 0, "unbind ok")
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
-    repoId = kwargs.get('repoId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
     project = isProjectExists(projectId)
     if project == None:
       return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
@@ -203,9 +203,9 @@ class GetRepoBranches(View):
       return JsonResponse(response)
     response = {}
     genResponseStateInfo(response, 0, "get branches ok")
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
-    repoId = kwargs.get('repoId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
     project = isProjectExists(projectId)
     if project == None:
       return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
@@ -253,9 +253,9 @@ class GetCommitHistory(View):
       return JsonResponse(response)
     response = {}
     genResponseStateInfo(response, 0, "get commit history ok")
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
-    repoId = kwargs.get('repoId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
     branchName = kwargs.get('branchName')
     project = isProjectExists(projectId)
     if project == None:
@@ -290,9 +290,9 @@ class GetIssueList(View):
       return JsonResponse(response)
     response = {}
     genResponseStateInfo(response, 0, "get issue list ok")
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
-    repoId = kwargs.get('repoId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
     project = isProjectExists(projectId)
     if project == None:
       return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
@@ -332,9 +332,9 @@ class GetPrList(View):
       return JsonResponse(response)
     response = {}
     genResponseStateInfo(response, 0, "get pr list ok")
-    userId = kwargs.get('userId')
-    projectId = kwargs.get('projectId')
-    repoId = kwargs.get('repoId')
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
     project = isProjectExists(projectId)
     if project == None:
       return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
