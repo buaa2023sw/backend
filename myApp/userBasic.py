@@ -112,7 +112,8 @@ def login(request):
             'id': user.id,
             'name': user.name,
             'email': user.email,
-            'projects': projects
+            'projects': projects,
+            'status': user.status
         }
     )
 

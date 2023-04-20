@@ -533,7 +533,7 @@ class test(View):
             u2p=UserProject.objects.filter(project_id=i.id)
             roles=[]
             for j in u2p:
-                roles.append(j.role)
+               roles.append(j.role)
             tmp["roles"]=roles
             ids.append(tmp)
                 
