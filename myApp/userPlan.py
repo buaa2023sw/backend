@@ -67,6 +67,8 @@ class deleteProject(View):
             response['data'] = None
             return JsonResponse(response)
 
+        tasks = Task.objects.filter(project_id=projectId)
+        tasks.delete()
         Project.objects.filter(id=projectId).delete()
         response['errcode'] = 0
         response['message'] = "success"
@@ -126,14 +128,15 @@ class addTask(View):
             response['data'] = None
             return JsonResponse(response)
 
-        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.ADMIN).count() == 0:
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
 
         project = Project.objects.get(id=projectId)
-        task = Task.objects.create(name=name, project_id=project)
+        deadline = datetime.datetime(year=2030, month=12, day=31)
+        task = Task.objects.create(name=name, project_id=project, deadline=deadline)
         task.status = Task.NOTSTART
         task.save()
 
@@ -151,7 +154,11 @@ class addSubTask(View):
         except Exception:
             return JsonResponse(response)
 
-        time = kwargs.get("deadline", [1999, 1, 1])
+        time = kwargs.get("deadline", "")
+        year, month, day = time.split("-")
+        year = int(year)
+        month = int(month)
+        day = int(day)
         contribute = kwargs.get("contribute", 0)
         name = kwargs.get("subTaskName", "")
         projectId = kwargs.get("projectId", -1)
@@ -173,14 +180,14 @@ class addSubTask(View):
             response['message'] = "user not exist"
             response['data'] = None
             return JsonResponse(response)
-        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.ADMIN).count() == 0:
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
 
         # use time[0] as year time[1] as month time[2] as day
-        deadline = datetime.datetime(year=time[0], month=time[1], day=time[2])
+        deadline = datetime.datetime(year=year, month=month, day=day)
         task = Task.objects.create(name=name, deadline=deadline, contribute_level=contribute, project_id_id=projectId,
                                    parent_id_id=belongTask)
         task.status = Task.NOTSTART
@@ -237,7 +244,12 @@ class modifyTaskContent(View):
             return JsonResponse(response)
 
         taskId = kwargs.get("taskId", -1)
-        deadline = kwargs.get("deadline", [1999, 1, 1])
+
+        deadline = kwargs.get("deadline", "")
+        year, month, day = deadline.split("-")
+        year = int(year)
+        month = int(month)
+        day = int(day)
         contribute = kwargs.get("contribute", 0)
         taskName = kwargs.get("taskName", "")
         if Task.objects.filter(id=taskId).count() == 0:
@@ -248,12 +260,12 @@ class modifyTaskContent(View):
         task = Task.objects.get(id=taskId)
 
         projectId = task.project_id_id
-        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.ADMIN).count() == 0:
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId, role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
-        task.deadline = datetime.datetime(year=deadline[0], month=deadline[1], day=deadline[2])
+        task.deadline = datetime.datetime(year=year, month=month, day=day)
         task.contribute_level = contribute
         task.name = taskName
         task.save()
@@ -282,14 +294,18 @@ class completeTask(View):
         task = Task.objects.get(id=taskId)
         projectId = task.project_id_id
         if UserProject.objects.filter(user_id=request.user, project_id=projectId,
-                                      role=UserProject.ADMIN).count() == 0 and UserTask.objects.filter(
-            user_id=request.user, task_id=taskId).count() == 0:
+                                      role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
         task.status = Task.COMPLETED
         task.save()
+
+        subtasks = Task.objects.filter(parent_id=taskId)
+        for i in subtasks:
+            i.status = Task.COMPLETED
+            i.save()
 
         response['errcode'] = 0
         response['message'] = "success"
@@ -320,8 +336,10 @@ class watchMyTask(View):
             subTasks = UserTask.objects.filter(user_id=request.user, task_id__parent_id=i)
             subTaskList = []
             for j in subTasks:
-                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
-                           "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id}
+                subtask = Task.objects.get(id=j.task_id_id)
+                sub_tmp = {"deadline": subtask.deadline, "contribute": subtask.contribute_level,
+                           "state": subtask.status,
+                           "intro": subtask.outline, 'managerId': j.user_id_id}
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
             data.append(tmp)
@@ -351,6 +369,41 @@ class notice(View):
         msg = Notice.objects.create(belongingTask_id=taskId,
                                     deadline=datetime.datetime(year=deadline[0], month=deadline[1], day=deadline[2]))
         msg.save()
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
+
+class removeTask(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        taskId = kwargs.get("taskId", -1)
+        if Task.objects.filter(id=taskId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        task = Task.objects.get(id=taskId)
+        projectId = task.project_id_id
+        if UserProject.objects.filter(user_id=request.user, project_id=projectId,
+                                      role=UserProject.NORMAL).count() > 0:
+            response['errcode'] = 3
+            response['message'] = "permission denied"
+            response['data'] = None
+            return JsonResponse(response)
+        task.delete()
+
+        subtasks = Task.objects.filter(parent_id=taskId)
+        for i in subtasks:
+            i.delete()
+
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
@@ -421,7 +474,7 @@ class modifyRole(View):
             return JsonResponse(response)
 
         if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
-                                      role=UserProject.NORMAL).count() == 0:
+                                      role=UserProject.DEVELOPER).count() == 0:
             response['errcode'] = 3
             response['message'] = "user not admin"
             response['data'] = None
@@ -465,7 +518,7 @@ class addMember(View):
             return JsonResponse(response)
 
         if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
-                                      role=UserProject.ADMIN).count() == 0:
+                                      role=UserProject.DEVELOPER).count() == 0:
             response['errcode'] = 3
             response['message'] = "user not admin"
             response['data'] = None
@@ -507,17 +560,24 @@ class removeMember(View):
             return JsonResponse(response)
 
         if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
-                                      role=UserProject.ADMIN).count() == 0:
+                                      role=UserProject.DEVELOPER).count() == 0:
             response['errcode'] = 3
             response['message'] = "user not admin"
             response['data'] = None
             return JsonResponse(response)
+
+        a = UserProject.objects.filter(user_id_id=peopleId, project_id_id=projectId)
+
+        # ids=[]
+        # for i in a:
+        #     ids.append(i.user_id)
 
         UserProject.objects.filter(user_id_id=peopleId, project_id_id=projectId).delete()
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
         return JsonResponse(response)
+
 
 class test(View):
     def post(self, request):
@@ -526,17 +586,17 @@ class test(View):
         #     kwargs: dict = json.loads(request.body)
         # except Exception:
         #     return JsonResponse(response)
-        projects=Project.objects.all()
-        ids=[]
+        projects = Project.objects.all()
+        ids = []
         for i in projects:
-            tmp={"id":i.id}
-            u2p=UserProject.objects.filter(project_id=i.id)
-            roles=[]
+            tmp = {"id": i.id}
+            u2p = UserProject.objects.filter(project_id=i.id)
+            roles = []
             for j in u2p:
-               roles.append(j.role)
-            tmp["roles"]=roles
+                roles.append(j.role)
+            tmp["roles"] = roles
             ids.append(tmp)
-                
+
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = ids

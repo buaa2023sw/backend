@@ -1,5 +1,5 @@
 from django.db import models
-
+import datetime
 class User(models.Model):
   id            = models.AutoField(primary_key=True)
   name          = models.CharField(max_length=255)
@@ -51,7 +51,7 @@ class Task(models.Model):
     (NOTSTART, 'NOTSTART'),
   )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
-  contribute_level = models.IntegerField()
+  contribute_level = models.IntegerField(default=0)
   parent_id     = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
   project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
   
