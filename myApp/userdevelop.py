@@ -271,10 +271,13 @@ class GetCommitHistory(View):
     try:
       log = "getCommitHistory.log"
       localPath = Repo.objects.get(id=repoId).local_path
-      os.system("cd " + localPath + " git checkout " + branchName + " && git pull")
+      os.system("cd " + localPath + " && git checkout " + branchName + " && git pull")
       cmd = "cd " + localPath + " && bash " + os.path.join(BASE_DIR, "myApp/get_commits.sh") + " > " + os.path.join(USER_REPOS_DIR, log)
       os.system(cmd)
-      ghInfo = json5.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
+      try:
+        ghInfo = json5.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
+      except Exception as e:
+        DBG("in GetCommitHistory has excp : " + str(e))
       response["data"] = ghInfo
     except Exception as e:
       return genUnexpectedlyErrorInfo(response, e)

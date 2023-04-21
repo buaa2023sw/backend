@@ -51,7 +51,7 @@ class Command(BaseCommand):
       name = "project" + str(i)
       outline = "this is project" + str(i)
       userInstance = User.objects.get(name="user" + str(i))
-      projectListToInsert.append(Project(status=Project.INPROGRESS,name=name,
+      projectListToInsert.append(Project(status=Project.INPROGRESS,access=Project.NORMAL ,name=name,
                                  outline=outline,manager_id=userInstance,progress=str(i)))
     Project.objects.bulk_create(projectListToInsert)
     

@@ -25,13 +25,21 @@ class Project(models.Model):
   INPROGRESS = 'B'
   NOTSTART = 'C'
   ILLEGAL = 'D'
+  NORMAL = 'A'
+  DISABLE = 'B'
   STATUS_LIST = (
     (COMPLETED, 'COMPLETED'),
     (INPROGRESS, 'INPROGRESS'),
     (NOTSTART, 'NOTSTART'),
     (ILLEGAL, 'ILLEGAL'),
   )
+  
+  ACCESS_LIST = (
+    (NORMAL, 'NORMAL'),
+    (DISABLE, 'DISABLE'),
+  )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
+  access        = models.CharField(max_length=2, choices=ACCESS_LIST)
   name          = models.CharField(max_length=255)
   outline       = models.TextField()
   manager_id    = models.ForeignKey(User, on_delete=models.CASCADE)

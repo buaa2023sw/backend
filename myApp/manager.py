@@ -43,10 +43,36 @@ class ShowUsers(View):
     genResponseStateInfo(response, 0, "get users ok")
     users = []
     managerId = kwargs.get('managerId')
-    # if not isAdmin(managerId):
-    #   return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
+    if not isAdmin(managerId):
+      return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
     allUsers = User.objects.all()
     for user in allUsers:
+      if user.status == user.ADMIN:
+        continue
+      users.append({"id": user.id, "name" : user.name, "email" : user.email, 
+                    "registerTime" : user.create_time, "status" : user.status})
+      
+    response["users"] = users
+    return JsonResponse(response)
+  
+class ShowAdmins(View):
+  def post(self, request):
+    DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    response = {}
+    genResponseStateInfo(response, 0, "get users ok")
+    users = []
+    managerId = kwargs.get('managerId')
+    if not isAdmin(managerId):
+      return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
+    allUsers = User.objects.all()
+    for user in allUsers:
+      if user.status != user.ADMIN:
+        continue
       users.append({"id": user.id, "name" : user.name, "email" : user.email, 
                     "registerTime" : user.create_time, "status" : user.status})
       
@@ -117,9 +143,11 @@ class ShowAllProjects(View):
     allProjects = Project.objects.all()
     for project in allProjects:
       leader = User.objects.get(id=project.manager_id.id)
-      projects.append({"name" : project.name, "leader" : leader.name,
+      projects.append({"name" : project.name, "projectId" : project.id,
+                       "leader" : leader.name, "leaderId" : leader.id,
                       "email" : leader.email, "createTime" : project.create_time,
-                      "progress" : project.progress, "status" : project.status})
+                      "progress" : project.progress, "status" : project.status, 
+                      "access" : project.access})
     response["projects"] = projects
     return JsonResponse(response)
 
@@ -143,6 +171,30 @@ class ChangeProjectStatus(View):
     if project.status == changeToStatus:
       return JsonResponse(genResponseStateInfo(response, 2, "no need change"))
     project.status = changeToStatus
+    project.save()
+    response["name"] = projectName
+    return JsonResponse(response)
+  
+class ChangeProjectAccess(View):
+  def post(self, request):
+    DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    response = {}
+    genResponseStateInfo(response, 0, "change status ok")
+    managerId = kwargs.get('managerId')
+    if not isAdmin(managerId):
+      return JsonResponse(genResponseStateInfo(response, 1, "Insufficient authority"))
+    projectId = kwargs.get('projectId')
+    changeToAccess = kwargs.get('changeToAccess')
+    project = Project.objects.get(id=projectId)
+    projectName = project.name
+    if project.access == changeToAccess:
+      return JsonResponse(genResponseStateInfo(response, 2, "no need change"))
+    project.access = changeToAccess
     project.save()
     response["name"] = projectName
     return JsonResponse(response)
