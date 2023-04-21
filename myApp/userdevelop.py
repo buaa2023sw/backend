@@ -271,7 +271,7 @@ class GetCommitHistory(View):
     try:
       log = "getCommitHistory.log"
       localPath = Repo.objects.get(id=repoId).local_path
-      os.system("cd " + localPath + " git checkout " + branchName + " && git pull")
+      os.system("cd " + localPath + " && git checkout " + branchName + " && git pull")
       cmd = "cd " + localPath + " && bash " + os.path.join(BASE_DIR, "myApp/get_commits.sh") + " > " + os.path.join(USER_REPOS_DIR, log)
       os.system(cmd)
       try:
