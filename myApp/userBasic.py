@@ -12,6 +12,7 @@ None_Existed_User = 1
 Password_Wrong = 2
 Invalid_Status = 3
 Modification_Failed = 1
+Modification_Profile_Failed = 1
 
 
 # 返回给前端的信息
@@ -24,6 +25,7 @@ Password_Wrong_Message = 'error password'
 Invalid_Status_Message = 'error status'
 Modification_Failed_Message = 'fail to change'
 Modification_Success_Message = 'change password ok'
+Modification_Profile_Failed_Message = 'fail to edit profile'
 
 
 def testtesttest(request):
@@ -105,6 +107,8 @@ def login(request):
     # Step 4. Login & Session
     request.session['userId'] = user.id
     projects = [{ 'id': p.id, 'name': p.name } for p in user.project_set.all()]
+    user.last_login_time = datetime.datetime.now()
+    user.save()
     return response_json(
         errcode = Success,
         message = Login_Success_Message,
@@ -153,4 +157,48 @@ def modify_password(request):
         return response_json(
             errcode = Modification_Failed,
             message = Modification_Failed_Message
+        )
+
+
+def show(request):
+    kwargs: dict = json.loads(request.body)
+    user = User.objects.filter(id = int(kwargs.get('userId'))).first()
+    return response_json(
+        errcode = Success,
+        message = "show profile ok",
+        data = {
+            'userName': user.name,
+            'userEmail': user.email
+        }
+    )
+
+def modify_information(request):
+    kwargs: dict = json.loads(request.body)
+
+    users = User.objects.filter(name = str(kwargs.get('userName')))
+    if not len(users) == 0:
+        return response_json(
+            errcode = Username_Duplicated,
+            message = Username_Duplicated_Message
+        )
+    users = User.objects.filter(email = str(kwargs.get('userEmail')))
+    if not len(users) == 0:
+        return response_json(
+            errcode = Email_Duplicated,
+            message = Email_Duplicated_Message
+        )
+
+    user = User.objects.filter(id = int(kwargs.get('userId'))).first()
+    try:
+        user.name = str(kwargs.get('userName'))
+        user.email = str(kwargs.get('userEmail'))
+        user.save()
+        return response_json(
+            errcode = Success,
+            message = 'edit profile ok'
+        )
+    except Exception as exp:
+        return response_json(
+            errcode = Modification_Profile_Failed,
+            message = Modification_Profile_Failed_Message
         )
