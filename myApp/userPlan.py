@@ -226,7 +226,8 @@ class showTaskList(View):
             for j in subTasks:
                 sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
                            "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id,
-                           "subTaskName": j.name, "subTaskId": j.id,"create_time":j.create_time,"complete_time":j.complete_time}
+                           "subTaskName": j.name, "subTaskId": j.id, "create_time": j.create_time,
+                           "complete_time": j.complete_time}
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
             data.append(tmp)
@@ -253,6 +254,8 @@ class modifyTaskContent(View):
         day = int(day)
         contribute = kwargs.get("contribute", 0)
         taskName = kwargs.get("taskName", "")
+        managerId = kwargs.get("managerId", -1)
+
         if Task.objects.filter(id=taskId).count() == 0:
             response['errcode'] = 1
             response['message'] = "task not exist"
@@ -266,9 +269,13 @@ class modifyTaskContent(View):
             response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
+
         task.deadline = datetime.datetime(year=year, month=month, day=day)
         task.contribute_level = contribute
         task.name = taskName
+
+        UserTask.objects.filter(task_id=task).delete()
+        UserTask.objects.create(user_id_id=managerId, task_id=task)
         task.save()
 
         response['errcode'] = 0
@@ -301,7 +308,7 @@ class completeTask(View):
             response['data'] = None
             return JsonResponse(response)
         task.status = Task.COMPLETED
-        task.complete_time=datetime.datetime.now()
+        task.complete_time = datetime.datetime.now()
         task.save()
 
         subtasks = Task.objects.filter(parent_id=taskId)
@@ -361,7 +368,13 @@ class notice(View):
             return JsonResponse(response)
 
         taskId = kwargs.get("taskId", -1)
-        deadline = kwargs.get("deadline", [1999, 1, 1])
+        deadline = kwargs.get("deadline", "")
+        year, month, day, hour, minute = deadline.split("-")
+        year = int(year)
+        month = int(month)
+        day = int(day)
+        hour = int(hour)
+        minute = int(minute)
         if Task.objects.filter(id=taskId).count() == 0:
             response['errcode'] = 1
             response['message'] = "task not exist"
@@ -369,7 +382,8 @@ class notice(View):
             return JsonResponse(response)
 
         msg = Notice.objects.create(belongingTask_id=taskId,
-                                    deadline=datetime.datetime(year=deadline[0], month=deadline[1], day=deadline[2]))
+                                    deadline=datetime.datetime(year=year, month=month, day=day, hour=hour,
+                                                               minute=minute))
         msg.save()
         response['errcode'] = 0
         response['message'] = "success"
