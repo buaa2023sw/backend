@@ -39,7 +39,7 @@ class Project(models.Model):
     (DISABLE, 'DISABLE'),
   )
   status        = models.CharField(max_length=2, choices=STATUS_LIST)
-  access        = models.CharField(max_length=2, choices=ACCESS_LIST)
+  access        = models.CharField(max_length=2, choices=ACCESS_LIST,default=NORMAL)
   name          = models.CharField(max_length=255)
   outline       = models.TextField()
   manager_id    = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -48,6 +48,7 @@ class Task(models.Model):
   id            = models.AutoField(primary_key=True)
   name          = models.CharField(max_length=255)
   create_time   = models.DateTimeField(auto_now_add=True)
+  complete_time=models.DateTimeField(default="2050-12-31")
   deadline      = models.DateTimeField()
   outline       = models.TextField()
   COMPLETED = 'A'

@@ -120,7 +120,7 @@ class addTask(View):
         except Exception:
             return JsonResponse(response)
 
-        name = kwargs.get("TaskName", "")
+        name = kwargs.get("taskName", "")
         projectId = kwargs.get("projectId", 0)
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
@@ -142,7 +142,7 @@ class addTask(View):
 
         response['errcode'] = 0
         response['message'] = "success"
-        response['data'] = None
+        response['data'] = name
         return JsonResponse(response)
 
 
@@ -225,7 +225,8 @@ class showTaskList(View):
             subTaskList = []
             for j in subTasks:
                 sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
-                           "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id}
+                           "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id,
+                           "subTaskName": j.name, "subTaskId": j.id,"create_time":j.create_time,"complete_time":j.complete_time}
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
             data.append(tmp)
@@ -300,6 +301,7 @@ class completeTask(View):
             response['data'] = None
             return JsonResponse(response)
         task.status = Task.COMPLETED
+        task.complete_time=datetime.datetime.now()
         task.save()
 
         subtasks = Task.objects.filter(parent_id=taskId)
