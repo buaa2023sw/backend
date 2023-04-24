@@ -20,7 +20,7 @@ class newProject(View):
         projectName = kwargs.get("projectName")
         projectIntro = kwargs.get("projectIntro")
 
-        project = Project.objects.create(name=projectName, outline=projectIntro, manager_id=request.user, status='C')
+        project = Project.objects.create(name=projectName, outline=projectIntro, manager_id=request.user, status='B')
         project.save()
 
         UserProject.objects.create(user_id=request.user, project_id=project, role=UserProject.DEVELOPER)
@@ -636,6 +636,7 @@ class test(View):
             for j in u2p:
                 roles.append(j.role)
             tmp["roles"] = roles
+            tmp["status"]=i.status
             ids.append(tmp)
 
         response['errcode'] = 0
