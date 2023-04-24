@@ -109,6 +109,31 @@ class modifyProject(View):
         return JsonResponse(response)
 
 
+class modifyProjectStatus(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+        status = kwargs.get("status", "")
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        project = Project.objects.get(id=projectId)
+        project.status = status
+        project.save()
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
 # ----------------------task level----------------------
 
 

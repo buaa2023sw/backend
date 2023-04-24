@@ -67,5 +67,6 @@ urlpatterns = [
     path('api/plan/watchMyTask', userPlan.watchMyTask.as_view()),
     path('api/plan/test', userPlan.test.as_view()),
     path('api/plan/removeTask', userPlan.removeTask.as_view()),
+    path('api/plan/modifyProjectStatus', userPlan.modifyProjectStatus.as_view()),
     path('api/echo', debug.echo),
 ]
