@@ -13,6 +13,7 @@ Password_Wrong = 2
 Invalid_Status = 3
 Modification_Failed = 1
 Modification_Profile_Failed = 1
+Show_User_Profile_Failed = 1
 
 
 # 返回给前端的信息
@@ -26,6 +27,7 @@ Invalid_Status_Message = 'error status'
 Modification_Failed_Message = 'fail to change'
 Modification_Success_Message = 'change password ok'
 Modification_Profile_Failed_Message = 'fail to edit profile'
+Show_User_Profile_Failed_Message = 'fail to show profile'
 
 
 def testtesttest(request):
@@ -162,13 +164,21 @@ def modify_password(request):
 
 def show(request):
     kwargs: dict = json.loads(request.body)
-    user = User.objects.filter(id = int(kwargs.get('userId'))).first()
+    user = User.objects.filter(id = int(kwargs.get('userId')))
+    if len(user) == 0:
+        return response_json(
+            errcode = Show_User_Profile_Failed,
+            message = Show_User_Profile_Failed_Message,
+        )
+
+    user = user.first()
     return response_json(
         errcode = Success,
         message = "show profile ok",
         data = {
             'userName': user.name,
-            'userEmail': user.email
+            'userEmail': user.email,
+            'photo': None,
         }
     )
 
