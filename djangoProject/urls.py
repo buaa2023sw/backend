@@ -50,6 +50,8 @@ urlpatterns = [
     path('api/register', userBasic.register),
     path('api/login', userBasic.login),
     path('api/user/information/password', userBasic.modify_password),
+    path('api/showProfile', userBasic.show),
+    path('api/editProfile', userBasic.modify_information),
     path('api/plan/newProject', userPlan.newProject.as_view()),
     path('api/plan/watchAllProject', userPlan.watchAllProject.as_view()),
     path('api/plan/addTask', userPlan.addTask.as_view()),
