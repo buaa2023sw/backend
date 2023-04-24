@@ -284,9 +284,9 @@ class GetProjectScale(View):
         big = big + 1
       else:
         large = large + 1
-    response["tiny"] = tiny
-    response["small"] = small
-    response["medium"] = medium
-    response["big"] = big
-    response["large"] = large
+    response["tinyNum"] = tiny
+    response["smallNum"] = small
+    response["mediumNum"] = medium
+    response["bigNum"] = big
+    response["largeNum"] = large
     return JsonResponse(response)
