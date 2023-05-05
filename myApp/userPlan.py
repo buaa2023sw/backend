@@ -189,6 +189,11 @@ class addSubTask(View):
         projectId = kwargs.get("projectId", -1)
         belongTask = kwargs.get("fatherTaskId", -1)
         managerId = kwargs.get("managerId", -1)
+        t=kwargs.get("start_time","")
+        y,m,d=t.split("-")
+        y=int(y)
+        m=int(m)
+        d=int(d)
 
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
@@ -213,8 +218,9 @@ class addSubTask(View):
 
         # use time[0] as year time[1] as month time[2] as day
         deadline = datetime.datetime(year=year, month=month, day=day)
+        startTime=datetime.datetime(year=y,month=m,day=d)
         task = Task.objects.create(name=name, deadline=deadline, contribute_level=contribute, project_id_id=projectId,
-                                   parent_id_id=belongTask)
+                                   parent_id_id=belongTask,start_time=startTime)
         task.status = Task.NOTSTART
         task.save()
 
@@ -251,7 +257,7 @@ class showTaskList(View):
             for j in subTasks:
                 sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
                            "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id,
-                           "subTaskName": j.name, "subTaskId": j.id, "create_time": j.create_time,
+                           "subTaskName": j.name, "subTaskId": j.id, "start_time": j.start_time,
                            "complete_time": j.complete_time}
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
@@ -280,6 +286,11 @@ class modifyTaskContent(View):
         contribute = kwargs.get("contribute", 0)
         taskName = kwargs.get("taskName", "")
         managerId = kwargs.get("managerId", -1)
+        startTime=kwargs.get("start_time","")
+        y,m,d=startTime.split("-")
+        y=int(y)
+        m=int(m)
+        d=int(d)
 
         if Task.objects.filter(id=taskId).count() == 0:
             response['errcode'] = 1
@@ -296,12 +307,14 @@ class modifyTaskContent(View):
             return JsonResponse(response)
 
         task.deadline = datetime.datetime(year=year, month=month, day=day)
+        task.start_time = datetime.datetime(year=y,month=m,day=d)
         task.contribute_level = contribute
         task.name = taskName
+        task.save()
 
         UserTask.objects.filter(task_id=task).delete()
         UserTask.objects.create(user_id_id=managerId, task_id=task)
-        task.save()
+
 
         response['errcode'] = 0
         response['message'] = "success"
@@ -369,11 +382,12 @@ class watchMyTask(View):
             tmp = {"taskName": i.name, "taskId": i.id}
             subTasks = UserTask.objects.filter(user_id=request.user, task_id__parent_id=i)
             subTaskList = []
-            for j in subTasks:
-                subtask = Task.objects.get(id=j.task_id_id)
-                sub_tmp = {"deadline": subtask.deadline, "contribute": subtask.contribute_level,
-                           "state": subtask.status,
-                           "intro": subtask.outline, 'managerId': j.user_id_id}
+            for subtask in subTasks:
+                j = Task.objects.get(id=subtask.task_id_id)
+                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
+                           "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id,
+                           "subTaskName": j.name, "subTaskId": j.id, "start_time": j.start_time,
+                           "complete_time": j.complete_time}
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
             data.append(tmp)
@@ -381,38 +395,6 @@ class watchMyTask(View):
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = data
-        return JsonResponse(response)
-
-
-class notice(View):
-    def post(self, request):
-        response = {'errcode': 1, 'message': "404 not success"}
-        try:
-            kwargs: dict = json.loads(request.body)
-        except Exception:
-            return JsonResponse(response)
-
-        taskId = kwargs.get("taskId", -1)
-        deadline = kwargs.get("deadline", "")
-        year, month, day, hour, minute = deadline.split("-")
-        year = int(year)
-        month = int(month)
-        day = int(day)
-        hour = int(hour)
-        minute = int(minute)
-        if Task.objects.filter(id=taskId).count() == 0:
-            response['errcode'] = 1
-            response['message'] = "task not exist"
-            response['data'] = None
-            return JsonResponse(response)
-
-        msg = Notice.objects.create(belongingTask_id=taskId,
-                                    deadline=datetime.datetime(year=year, month=month, day=day, hour=hour,
-                                                               minute=minute))
-        msg.save()
-        response['errcode'] = 0
-        response['message'] = "success"
-        response['data'] = None
         return JsonResponse(response)
 
 
@@ -545,12 +527,17 @@ class addMember(View):
             response['data'] = None
             return JsonResponse(response)
 
-        peopleId = kwargs.get("personId", -1)
-        if User.objects.filter(id=peopleId).count() == 0:
+        nameOrEmail = kwargs.get("nameOrEmail", "")
+        if User.objects.filter(name=nameOrEmail).count() == 0 and User.objects.filter(email=nameOrEmail).count() == 0:
             response['errcode'] = 1
             response['message'] = "user not exist"
             response['data'] = None
             return JsonResponse(response)
+
+        if User.objects.filter(name=nameOrEmail).count() > 0:
+            peopleId=User.objects.get(name=nameOrEmail).id
+        else:
+            peopleId = User.objects.get(email=nameOrEmail).id
 
         if UserProject.objects.filter(user_id_id=peopleId, project_id_id=projectId).count() != 0:
             response['errcode'] = 2
@@ -617,6 +604,124 @@ class removeMember(View):
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
+        return JsonResponse(response)
+
+
+#-----------------notice level------------------------
+class notice(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        taskId = kwargs.get("taskId", -1)
+        deadline = kwargs.get("deadline", "")
+        year, month, day, hour, minute = deadline.split("-")
+        year = int(year)
+        month = int(month)
+        day = int(day)
+        hour = int(hour)
+        minute = int(minute)
+        if Task.objects.filter(id=taskId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        msg = Notice.objects.create(belongingTask_id=taskId,
+                                    deadline=datetime.datetime(year=year, month=month, day=day, hour=hour,
+                                                               minute=minute))
+        msg.save()
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+        return JsonResponse(response)
+
+
+class showNoticeList(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        taskList = Task.objects.filter(project_id_id=projectId)
+        data = []
+        for i in taskList:
+            notices = Notice.objects.filter(belongingTask=i)
+            for j in notices:
+                sub_tmp = {"noticeId": j.id, "taskId":i.id,"deadline":j.deadline}
+                data.append(sub_tmp)
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = data
+
+        return JsonResponse(response)
+
+
+class modifyNotice(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        noticeId = kwargs.get("noticeId", -1)
+        if Notice.objects.filter(id=noticeId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "notice not exist"
+            response['data'] = None
+            return JsonResponse(response)
+        notice = Notice.objects.get(id=noticeId)
+        deadline = kwargs.get("deadline", "")
+        year, month, day, hour, minute = deadline.split("-")
+        year = int(year)
+        month = int(month)
+        day = int(day)
+        hour = int(hour)
+        minute = int(minute)
+        notice.deadline = datetime.datetime(year=year,month=month,day=day,hour=hour,minute=minute)
+        notice.save()
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+
+        return JsonResponse(response)
+
+
+class removeNotice(View):
+    def post(self, request):
+        response = {'errcode': 1, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+        noticeId = kwargs.get("noticeId", -1)
+        if Notice.objects.filter(id=noticeId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "notice not exist"
+            response['data'] = None
+            return JsonResponse(response)
+        this_notice = Notice.objects.get(id=noticeId)
+        this_notice.delete()
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = None
+
         return JsonResponse(response)
 
 

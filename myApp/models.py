@@ -48,6 +48,7 @@ class Task(models.Model):
   id            = models.AutoField(primary_key=True)
   name          = models.CharField(max_length=255)
   create_time   = models.DateTimeField(auto_now_add=True)
+  start_time = models.DateTimeField()
   complete_time=models.DateTimeField(default="2050-12-31")
   deadline      = models.DateTimeField()
   outline       = models.TextField()
