@@ -458,7 +458,8 @@ class showPersonList(View):
             res.append({
                 "peopleId": person.user_id.id,
                 "peopleName": person.user_id.name,
-                "peopleJob": person.role
+                "peopleJob": person.role,
+                "peopleEmail": person.user_id.email,
             })
 
         response['errcode'] = 0
@@ -604,6 +605,28 @@ class removeMember(View):
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = None
+        return JsonResponse(response)
+
+
+class getEmail(View):
+    def post(self, request):
+        response = {'errcode': 0, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        peopleId = kwargs.get("personId", -1)
+        if User.objects.filter(id=peopleId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "user not exist"
+            return JsonResponse(response)
+
+        user = User.objects.get(id=peopleId)
+        email = str(user.email)
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = email
         return JsonResponse(response)
 
 

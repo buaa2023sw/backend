@@ -80,4 +80,5 @@ urlpatterns = [
     path('api/notice/sysPostNoticeToAll', notice.SysPostNoticeToAll.as_view()),
     path('api/notice/userGetNotice', notice.UserGetNotice.as_view()),
     path('api/notice/userConfirmNotice', notice.UserConfirmNotice.as_view()),
+    path('api/plan/getEmail', userPlan.getEmail.as_view())
 ]
