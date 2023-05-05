@@ -1,4 +1,4 @@
-from myApp.models import User
+from myApp.models import User, UserProject, Project
 from djangoProject.settings import response_json
 import datetime
 import json
@@ -109,6 +109,9 @@ def login(request):
     # Step 4. Login & Session
     request.session['userId'] = user.id
     projects = [{ 'id': p.id, 'name': p.name } for p in user.project_set.all()]
+    for up in UserProject.objects.filter(user_id = user.id):
+        project = Project.objects.filter(id = int(up.project_id)).first()
+        projects.append({'id': project.id, 'name': project.name})
     user.last_login_time = datetime.datetime.now()
     user.save()
     return response_json(
@@ -183,22 +186,30 @@ def show(request):
     )
 
 def modify_information(request):
+    """
+        modify_information 用于修改用户的 username 或者 email. 前端逻辑如下:
+        - 若用户只更改email, 则传来用户原先的username.
+        - 若用户只更改username, 则传来用户原先的email.
+        - 若用户二者都更改, 则同时传来新email和新username.
+    """
+
     kwargs: dict = json.loads(request.body)
+    user = User.objects.filter(id = int(kwargs.get('userId'))).first()
 
     users = User.objects.filter(name = str(kwargs.get('userName')))
-    if not len(users) == 0:
+    if not (len(users) == 1 and users.first().id == user.id) and not len(users) == 0:
         return response_json(
             errcode = Username_Duplicated,
             message = Username_Duplicated_Message
         )
+
     users = User.objects.filter(email = str(kwargs.get('userEmail')))
-    if not len(users) == 0:
+    if not (len(users) == 1 and users.first().id == user.id) and not len(users) == 0:
         return response_json(
             errcode = Email_Duplicated,
             message = Email_Duplicated_Message
         )
 
-    user = User.objects.filter(id = int(kwargs.get('userId'))).first()
     try:
         user.name = str(kwargs.get('userName'))
         user.email = str(kwargs.get('userEmail'))

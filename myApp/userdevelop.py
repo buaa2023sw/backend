@@ -12,6 +12,26 @@ import sys
 import subprocess
 import json5
 
+repo_semaphore = {}
+def getSemaphore(repoId):
+  repoId = str(repoId)
+  if not repo_semaphore.__contains__(repoId):
+    repo_semaphore[repoId] = True
+    return
+  while repo_semaphore[repoId] == True:
+    continue
+  repo_semaphore[repoId] = True
+  return
+
+def releaseSemaphore(repoId):
+  repo_semaphore[repoId] = False
+  return
+  
+MERET = 0
+def getCounter():
+  MERET = MERET + 1
+  return MERET - 1
+
 def isProjectExists(projectId):
   try:
     project = Project.objects.get(id=projectId)
@@ -80,7 +100,7 @@ class GetBindRepos(View):
     if userProject == None:
       return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
     
-    descLogName = "getRepoDesc.log"
+    descLogName = str(getCounter()) + "_getRepoDesc.log"
     try:
       userProjectRepos = UserProjectRepo.objects.filter(project_id=projectId)
       for userProjectRepo in userProjectRepos:
@@ -90,6 +110,7 @@ class GetBindRepos(View):
         os.system("gh repo view " + repo.remote_path + " | grep description > " + os.path.join(USER_REPOS_DIR, descLogName))
         desc = open(os.path.join(USER_REPOS_DIR, descLogName), "r").readlines()[0]
         desc = desc.split(":", 2)[1].strip()
+        os.system("rm -f " + os.path.join(USER_REPOS_DIR, descLogName))
         if desc.isspace():
           desc = None
         response["data"].append({"repoId" : repoId, 
@@ -136,13 +157,11 @@ class UserBindRepo(View):
         localPath = os.path.join(USER_REPOS_DIR, repoName)
         DBG("repoName=" + repoName, " localPath=" + localPath)
         if localHasRepo == False:
-          # if dir exists, just remove it
-          if os.path.exists(localPath):
-            shutil.rmtree(localPath)
-          # clone the repo
-          r = os.system("gh repo clone " + repoRemotePath + " " + localPath)
-          if r != 0:
-            return JsonResponse(genResponseStateInfo(response, 5, "clone repo fail"))
+          # if dir not exists, then clone
+          if not os.path.exists(localPath):
+            r = os.system("gh repo clone " + repoRemotePath + " " + localPath)
+            if r != 0:
+              return JsonResponse(genResponseStateInfo(response, 5, "clone repo fail"))
         # insert Repo
         repo = None
         s = Repo.objects.filter(remote_path=repoRemotePath)
@@ -218,8 +237,8 @@ class GetRepoBranches(View):
     
     data = []
     try:
-      log = "getRepoBranches.log"
-      commitLog = "commitInfo.log"
+      log = getCounter() + "_getRepoBranches.log"
+      commitLog = getCounter() + "_commitInfo.log"
       remotePath = Repo.objects.get(id=repoId).remote_path
       os.system("gh api -H \"Accept: application/vnd.github+json\" -H \
                 \"X-GitHub-Api-Version: 2022-11-28\" /repos/" + remotePath + "/branches > " + os.path.join(USER_REPOS_DIR, log))
@@ -229,6 +248,8 @@ class GetRepoBranches(View):
         cmd = "gh api /repos/" + remotePath + "/commits/" + sha + " > " + os.path.join(USER_REPOS_DIR, commitLog)
         os.system(cmd)
         commitInfo = json.load(open(os.path.join(USER_REPOS_DIR, commitLog), encoding="utf-8"))
+        os.system("rm -f " + os.path.join(USER_REPOS_DIR, log))
+        os.system("rm -f " + os.path.join(USER_REPOS_DIR, commitLog))
         data.append({"branchName" : it["name"],
                       "lastCommit" : {
                         "sha" : sha,
@@ -269,16 +290,19 @@ class GetCommitHistory(View):
     
     data = []
     try:
-      log = "getCommitHistory.log"
+      log = getCounter() + "_getCommitHistory.log"
       localPath = Repo.objects.get(id=repoId).local_path
+      getSemaphore(repoId)
       os.system("cd " + localPath + " && git checkout " + branchName + " && git pull")
       cmd = "cd " + localPath + " && bash " + os.path.join(BASE_DIR, "myApp/get_commits.sh") + " > " + os.path.join(USER_REPOS_DIR, log)
       os.system(cmd)
+      releaseSemaphore(repoId)
       try:
         ghInfo = json5.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
       except Exception as e:
         DBG("in GetCommitHistory has excp : " + str(e))
       response["data"] = ghInfo
+      os.system("rm -f " + os.path.join(USER_REPOS_DIR, log))
     except Exception as e:
       return genUnexpectedlyErrorInfo(response, e)
     return JsonResponse(response)

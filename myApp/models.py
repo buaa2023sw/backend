@@ -105,8 +105,22 @@ class Post(models.Model):
   id            = models.AutoField(primary_key=True)
   name          = models.CharField(max_length=255)
   content       = models.TextField()
-  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
-  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+  post_time     = models.TimeField(auto_now_add=True)
+  PROJ_ALL = 'PROJ_ALL'
+  PROJ_ONE = 'PROJ_ONE'
+  SYS_PROJ = 'SYS_PROJ'
+  SYS_ALL = 'SYS_ALL'
+  TYPE_LIST = (
+    (PROJ_ALL, 'PROJ_ALL'),
+    (PROJ_ONE, 'PROJ_ONE'),
+    (SYS_PROJ, 'SYS_PROJ'),
+    (SYS_ALL, 'SYS_ALL'),
+  )
+  post_type     = models.CharField(max_length=10, choices=TYPE_LIST)
+  receiver_id   = models.ForeignKey(User, on_delete=models.CASCADE,related_name='user_id')
+  is_received   = models.BooleanField()
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE, null=True,related_name='receiver_id')
+  project_id    = models.ForeignKey(Project, on_delete=models.CASCADE,null=True)
 
 class Repo(models.Model):
   id            = models.AutoField(primary_key=True)
