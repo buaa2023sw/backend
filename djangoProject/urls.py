@@ -20,7 +20,7 @@ from django.urls import path, include
 from django.views.generic import TemplateView
 
 from myApp import userdevelop, manager, userBasic, userPlan, debug
-
+from myApp import notice
 from django.urls import re_path
 from django.conf import settings
 from django.views.static import serve
@@ -71,4 +71,10 @@ urlpatterns = [
     path('api/plan/removeTask', userPlan.removeTask.as_view()),
     path('api/plan/modifyProjectStatus', userPlan.modifyProjectStatus.as_view()),
     path('api/echo', debug.echo),
+    path('api/notice/userPostNoticeToAll', notice.UserPostNoticeToAll.as_view()),
+    path('api/notice/userPostNoticeToOne', notice.UserPostNoticeToOne.as_view()),
+    path('api/notice/sysPostNoticeInProject', notice.SysPostNoticeInProject.as_view()),
+    path('api/notice/sysPostNoticeToAll', notice.SysPostNoticeToAll.as_view()),
+    path('api/notice/userGetNotice', notice.UserGetNotice.as_view()),
+    path('api/notice/userConfirmNotice', notice.UserConfirmNotice.as_view()),
 ]

@@ -34,8 +34,10 @@ class Command(BaseCommand):
     "insert some data in data base"
     print("begin build data base")
     userListToInsert = list()
-    User(name="admin1",email="admin@buaa.edu.cn",password="111111",
+    User(name="system",email="system@buaa.edu.cn",password="111111",
          last_login_time=datetime.datetime.today(),status=User.ADMIN).save()
+    Project(status=Project.INPROGRESS,access=Project.NORMAL ,name="system",
+            outline="system",manager_id=User.objects.get(name="system"),progress=1).save()
     for i in range(2, 11):
       name = "user" + str(i)
       email = "2037364" + str(i) + "@buaa.edu.cn"
@@ -58,7 +60,7 @@ class Command(BaseCommand):
     userProjectlist = list()
     for i in range(2, 11):
       user = User.objects.get(id=str(i))
-      project = Project.objects.get(id=str(i - 1))
+      project = Project.objects.get(id=str(i))
       userProjectlist.append(UserProject(user_id=user, project_id=project))
     UserProject.objects.bulk_create(userProjectlist)
     
