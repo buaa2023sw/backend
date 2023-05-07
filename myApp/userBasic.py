@@ -110,7 +110,7 @@ def login(request):
     request.session['userId'] = user.id
     projects = [{ 'id': p.id, 'name': p.name } for p in user.project_set.all()]
     for up in UserProject.objects.filter(user_id = user.id):
-        project = Project.objects.filter(id = int(up.project_id)).first()
+        project = Project.objects.filter(id = int(up.project_id.id)).first()
         projects.append({'id': project.id, 'name': project.name})
     user.last_login_time = datetime.datetime.now()
     user.save()
