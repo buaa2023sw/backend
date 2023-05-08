@@ -19,7 +19,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from myApp import userdevelop, manager, userBasic, userPlan, debug
+from myApp import userdevelop, manager, userBasic, userPlan, debug, AI
 from myApp import notice
 from django.urls import re_path
 from django.conf import settings
@@ -80,5 +80,7 @@ urlpatterns = [
     path('api/notice/sysPostNoticeToAll', notice.SysPostNoticeToAll.as_view()),
     path('api/notice/userGetNotice', notice.UserGetNotice.as_view()),
     path('api/notice/userConfirmNotice', notice.UserConfirmNotice.as_view()),
-    path('api/plan/getEmail', userPlan.getEmail.as_view())
+    path('api/plan/getEmail', userPlan.getEmail.as_view()),
+    path('api/ai/UnitTest', AI.UnitTest.as_view()),
+    path('api/ai/CodeReview', AI.CodeReview.as_view()),
 ]

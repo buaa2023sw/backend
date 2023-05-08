@@ -547,7 +547,7 @@ class addMember(View):
             return JsonResponse(response)
 
         if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
-                                      role=UserProject.DEVELOPER).count() == 0:
+                                      role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "user not admin"
             response['data'] = None
