@@ -134,6 +134,7 @@ class modifyProjectStatus(View):
         response['data'] = None
         return JsonResponse(response)
 
+
 # ----------------------task level----------------------
 
 
@@ -189,11 +190,11 @@ class addSubTask(View):
         projectId = kwargs.get("projectId", -1)
         belongTask = kwargs.get("fatherTaskId", -1)
         managerId = kwargs.get("managerId", -1)
-        t=kwargs.get("start_time","")
-        y,m,d=t.split("-")
-        y=int(y)
-        m=int(m)
-        d=int(d)
+        t = kwargs.get("start_time", "")
+        y, m, d = t.split("-")
+        y = int(y)
+        m = int(m)
+        d = int(d)
 
         if Project.objects.filter(id=projectId).count() == 0:
             response['errcode'] = 1
@@ -218,9 +219,9 @@ class addSubTask(View):
 
         # use time[0] as year time[1] as month time[2] as day
         deadline = datetime.datetime(year=year, month=month, day=day)
-        startTime=datetime.datetime(year=y,month=m,day=d)
+        startTime = datetime.datetime(year=y, month=m, day=d)
         task = Task.objects.create(name=name, deadline=deadline, contribute_level=contribute, project_id_id=projectId,
-                                   parent_id_id=belongTask,start_time=startTime)
+                                   parent_id_id=belongTask, start_time=startTime)
         task.status = Task.NOTSTART
         task.save()
 
@@ -250,15 +251,30 @@ class showTaskList(View):
 
         taskList = Task.objects.filter(project_id_id=projectId, parent_id=None)
         data = []
+        cur_time = datetime.datetime.now()
         for i in taskList:
             tmp = {"taskName": i.name, "taskId": i.id}
             subTasks = Task.objects.filter(parent_id=i)
             subTaskList = []
             for j in subTasks:
-                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
+                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level,
                            "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id,
                            "subTaskName": j.name, "subTaskId": j.id, "start_time": j.start_time,
                            "complete_time": j.complete_time}
+
+                if j.status != Task.COMPLETED:
+                    if cur_time > j.deadline:
+                        sub_tmp["status"] = 'E'  # 延期未完成
+                    elif cur_time < j.start_time:
+                        sub_tmp["status"] = 'C'  # 未开始
+                    else:
+                        sub_tmp["status"] = 'B'  # 进行中
+                else:
+                    if j.complete_time > j.deadline:
+                        sub_tmp["status"] = 'D'  # 延期完成
+                    else:
+                        sub_tmp["status"] = 'A'  # 按时完成
+
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
             data.append(tmp)
@@ -286,11 +302,11 @@ class modifyTaskContent(View):
         contribute = kwargs.get("contribute", 0)
         taskName = kwargs.get("taskName", "")
         managerId = kwargs.get("managerId", -1)
-        startTime=kwargs.get("start_time","")
-        y,m,d=startTime.split("-")
-        y=int(y)
-        m=int(m)
-        d=int(d)
+        startTime = kwargs.get("start_time", "")
+        y, m, d = startTime.split("-")
+        y = int(y)
+        m = int(m)
+        d = int(d)
 
         if Task.objects.filter(id=taskId).count() == 0:
             response['errcode'] = 1
@@ -307,14 +323,13 @@ class modifyTaskContent(View):
             return JsonResponse(response)
 
         task.deadline = datetime.datetime(year=year, month=month, day=day)
-        task.start_time = datetime.datetime(year=y,month=m,day=d)
+        task.start_time = datetime.datetime(year=y, month=m, day=d)
         task.contribute_level = contribute
         task.name = taskName
         task.save()
 
         UserTask.objects.filter(task_id=task).delete()
         UserTask.objects.create(user_id_id=managerId, task_id=task)
-
 
         response['errcode'] = 0
         response['message'] = "success"
@@ -376,7 +391,7 @@ class watchMyTask(View):
             return JsonResponse(response)
 
         taskList = Task.objects.filter(project_id_id=projectId, parent_id=None)
-
+        cur_time = datetime.datetime.now()
         data = []
         for i in taskList:
             tmp = {"taskName": i.name, "taskId": i.id}
@@ -384,10 +399,24 @@ class watchMyTask(View):
             subTaskList = []
             for subtask in subTasks:
                 j = Task.objects.get(id=subtask.task_id_id)
-                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level, "state": j.status,
+                sub_tmp = {"deadline": j.deadline, "contribute": j.contribute_level,
                            "intro": j.outline, 'managerId': UserTask.objects.get(task_id=j).user_id_id,
                            "subTaskName": j.name, "subTaskId": j.id, "start_time": j.start_time,
                            "complete_time": j.complete_time}
+
+                if j.status != Task.COMPLETED:
+                    if cur_time > j.deadline:
+                        sub_tmp["status"] = 'E'  # 延期未完成
+                    elif cur_time < j.start_time:
+                        sub_tmp["status"] = 'C'  # 未开始
+                    else:
+                        sub_tmp["status"] = 'B'  # 进行中
+                else:
+                    if j.complete_time > j.deadline:
+                        sub_tmp["status"] = 'D'  # 延期完成
+                    else:
+                        sub_tmp["status"] = 'A'  # 按时完成
+
                 subTaskList.append(sub_tmp)
             tmp["subTaskList"] = subTaskList
             data.append(tmp)
@@ -536,7 +565,7 @@ class addMember(View):
             return JsonResponse(response)
 
         if User.objects.filter(name=nameOrEmail).count() > 0:
-            peopleId=User.objects.get(name=nameOrEmail).id
+            peopleId = User.objects.get(name=nameOrEmail).id
         else:
             peopleId = User.objects.get(email=nameOrEmail).id
 
@@ -630,7 +659,7 @@ class getEmail(View):
         return JsonResponse(response)
 
 
-#-----------------notice level------------------------
+# -----------------notice level------------------------
 class notice(View):
     def post(self, request):
         response = {'errcode': 1, 'message': "404 not success"}
@@ -684,7 +713,7 @@ class showNoticeList(View):
         for i in taskList:
             notices = Notice.objects.filter(belongingTask=i)
             for j in notices:
-                sub_tmp = {"noticeId": j.id, "taskId":i.id,"deadline":j.deadline}
+                sub_tmp = {"noticeId": j.id, "taskId": i.id, "deadline": j.deadline}
                 data.append(sub_tmp)
         response['errcode'] = 0
         response['message'] = "success"
@@ -715,7 +744,7 @@ class modifyNotice(View):
         day = int(day)
         hour = int(hour)
         minute = int(minute)
-        notice.deadline = datetime.datetime(year=year,month=month,day=day,hour=hour,minute=minute)
+        notice.deadline = datetime.datetime(year=year, month=month, day=day, hour=hour, minute=minute)
         notice.save()
 
         response['errcode'] = 0
@@ -764,7 +793,7 @@ class test(View):
             for j in u2p:
                 roles.append(j.role)
             tmp["roles"] = roles
-            tmp["status"]=i.status
+            tmp["status"] = i.status
             ids.append(tmp)
 
         response['errcode'] = 0
