@@ -87,10 +87,17 @@ class Message(models.Model):
     (PIC, 'PIC'),
     (FILE, 'FILE'),
   )
+  CHECKED, UNCHECKED = 'C', 'UC'
+  STATUS_LIST = (
+    (CHECKED, 'CHECKED'),
+    (UNCHECKED, 'UNCHECKED'),
+  )
+  status        = models.CharField(max_length=2, choices=STATUS_LIST)
   type          = models.CharField(max_length=2, choices=TYPE_LIST)
   content       = models.CharField(max_length=255) # TODO use FILE
   group_id      = models.ForeignKey(Group, on_delete=models.CASCADE)
-  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  send_user     = models.ForeignKey(User, on_delete=models.CASCADE)
+  receive_user  = models.ForeignKey(User, on_delete=models.CASCADE)
   time          = models.DateTimeField(auto_now_add=True)
   
 class Document(models.Model):
