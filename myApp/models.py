@@ -164,8 +164,8 @@ class UserProject(models.Model):
   role          = models.CharField(max_length=3, choices=ROLE_LIST)
   
 class UserGroup(models.Model):
-  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
-  group_id      = models.ForeignKey(Group, on_delete=models.CASCADE)
+  user          = models.ForeignKey(User, on_delete=models.CASCADE)
+  group         = models.ForeignKey(Group, on_delete=models.CASCADE)
   NORMAL = 'A'
   ADMIN = 'B'
   ROLE_LIST = (
