@@ -96,8 +96,8 @@ class Message(models.Model):
   type          = models.CharField(max_length=2, choices=TYPE_LIST)
   content       = models.CharField(max_length=255) # TODO use FILE
   group_id      = models.ForeignKey(Group, on_delete=models.CASCADE)
-  send_user     = models.ForeignKey(User, on_delete=models.CASCADE)
-  receive_user  = models.ForeignKey(User, on_delete=models.CASCADE)
+  send_user     = models.ForeignKey(User, on_delete=models.CASCADE,related_name='receive_user')
+  receive_user  = models.ForeignKey(User, on_delete=models.CASCADE,related_name='send_user')
   time          = models.DateTimeField(auto_now_add=True)
   
 class Document(models.Model):
