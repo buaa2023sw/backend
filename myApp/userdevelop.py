@@ -29,6 +29,7 @@ def releaseSemaphore(repoId):
   
 MERET = 0
 def getCounter():
+  global MERET
   MERET = MERET + 1
   return MERET - 1
 
@@ -237,8 +238,8 @@ class GetRepoBranches(View):
     
     data = []
     try:
-      log = getCounter() + "_getRepoBranches.log"
-      commitLog = getCounter() + "_commitInfo.log"
+      log = str(getCounter()) + "_getRepoBranches.log"
+      commitLog = str(getCounter()) + "_commitInfo.log"
       remotePath = Repo.objects.get(id=repoId).remote_path
       os.system("gh api -H \"Accept: application/vnd.github+json\" -H \
                 \"X-GitHub-Api-Version: 2022-11-28\" /repos/" + remotePath + "/branches > " + os.path.join(USER_REPOS_DIR, log))
@@ -248,8 +249,6 @@ class GetRepoBranches(View):
         cmd = "gh api /repos/" + remotePath + "/commits/" + sha + " > " + os.path.join(USER_REPOS_DIR, commitLog)
         os.system(cmd)
         commitInfo = json.load(open(os.path.join(USER_REPOS_DIR, commitLog), encoding="utf-8"))
-        os.system("rm -f " + os.path.join(USER_REPOS_DIR, log))
-        os.system("rm -f " + os.path.join(USER_REPOS_DIR, commitLog))
         data.append({"branchName" : it["name"],
                       "lastCommit" : {
                         "sha" : sha,
@@ -260,6 +259,8 @@ class GetRepoBranches(View):
                       }
                       })
       response["data"] = data
+      # os.system("rm -f " + os.path.join(USER_REPOS_DIR, log))
+      # os.system("rm -f " + os.path.join(USER_REPOS_DIR, commitLog))
     except Exception as e:
       return genUnexpectedlyErrorInfo(response, e)
     return JsonResponse(response)
@@ -290,7 +291,7 @@ class GetCommitHistory(View):
     
     data = []
     try:
-      log = getCounter() + "_getCommitHistory.log"
+      log = str(getCounter()) + "_getCommitHistory.log"
       localPath = Repo.objects.get(id=repoId).local_path
       getSemaphore(repoId)
       os.system("cd " + localPath + " && git checkout " + branchName + " && git pull")

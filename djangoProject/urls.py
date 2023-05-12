@@ -25,6 +25,10 @@ from django.urls import re_path
 from django.conf import settings
 from django.views.static import serve
 
+websocket_urlpatterns = [
+
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/userBindRepo', userdevelop.UserBindRepo.as_view()),

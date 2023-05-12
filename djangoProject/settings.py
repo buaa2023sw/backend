@@ -43,6 +43,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -183,6 +184,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 USER_REPOS_DIR = os.path.join(BASE_DIR, "userRepos")
 
 DEBUG_MODE = True
+
+# add root location at djangoProject/asgi.py application
+# point Daphne at the root routing configuration
+ASGI_APPLICATION = 'djangoProject.asgi.application'
+# enable consumer layers
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 def DBG(*args):
   if DEBUG_MODE == True:
