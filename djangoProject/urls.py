@@ -51,6 +51,8 @@ urlpatterns = [
     path('api/develop/getCommitHistory', userdevelop.GetCommitHistory.as_view()),
     path('api/develop/getIssueList', userdevelop.GetIssueList.as_view()),
     path('api/develop/getPrList', userdevelop.GetPrList.as_view()),
+    path('api/develop/getFileTree', userdevelop.GetFileTree.as_view()),
+    path('api/develop/getContent', userdevelop.GetContent.as_view()),
     path('api/register', userBasic.register),
     path('api/login', userBasic.login),
     path('api/user/information/password', userBasic.modify_password),

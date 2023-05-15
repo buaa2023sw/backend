@@ -392,3 +392,93 @@ class GetPrList(View):
     except Exception as e:
       return genUnexpectedlyErrorInfo(response, e)
     return JsonResponse(response)
+  
+  
+def _getFileTree(dirPath):
+  if os.path.isfile(dirPath):
+    return {"name" : os.path.basename(dirPath)}
+  children = []
+  fs = os.listdir(dirPath)
+  for f in fs:
+    if f == ".git":
+      continue
+    children.append(_getFileTree(os.path.join(dirPath, f)))
+  return {"name" : os.path.basename(dirPath), "children" : children}
+    
+
+class GetFileTree(View):
+  def post(self, request):
+    DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    response = {}
+    genResponseStateInfo(response, 0, "get file tree ok")
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
+    branch = str(kwargs.get('branch'))
+    project = isProjectExists(projectId)
+    if project == None:
+      return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
+    userProject = isUserInProject(userId, projectId)
+    if userProject == None:
+      return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
+    
+    if not UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId).exists():
+      return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project"))
+    
+    data = []
+    try:
+      localPath = Repo.objects.get(id=repoId).local_path
+      getSemaphore(repoId)
+      os.system("cd " + localPath + " && git checkout " + branch + " && git pull")
+      r = _getFileTree(localPath)
+      for item in r["children"]:
+        data.append(item)
+      response["data"] = data
+      releaseSemaphore(repoId)
+    except Exception as e:
+      return genUnexpectedlyErrorInfo(response, e)
+    return JsonResponse(response)
+
+class GetContent(View):
+  def post(self, request):
+    DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    response = {}
+    genResponseStateInfo(response, 0, "get file tree ok")
+    userId = str(kwargs.get('userId'))
+    projectId = str(kwargs.get('projectId'))
+    repoId = str(kwargs.get('repoId'))
+    branch = str(kwargs.get('branch'))
+    path = str(kwargs.get('path'))
+    project = isProjectExists(projectId)
+    if project == None:
+      return JsonResponse(genResponseStateInfo(response, 1, "project does not exists"))
+    userProject = isUserInProject(userId, projectId)
+    if userProject == None:
+      return JsonResponse(genResponseStateInfo(response, 2, "user not in project"))
+    
+    if not UserProjectRepo.objects.filter(project_id=projectId, repo_id=repoId).exists():
+      return JsonResponse(genResponseStateInfo(response, 3, "no such repo in project"))
+    
+    data = ""
+    try:
+      localPath = Repo.objects.get(id=repoId).local_path
+      getSemaphore(repoId)
+      os.system("cd " + localPath + " && git checkout " + branch + " && git pull")
+      filePath = localPath + path#os.path.join(localPath, path)
+      DBG(filePath)
+      data = open(filePath).read()
+      response["data"] = data
+      releaseSemaphore(repoId)
+    except Exception as e:
+      return genUnexpectedlyErrorInfo(response, e)
+    return JsonResponse(response)
