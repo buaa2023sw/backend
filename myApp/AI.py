@@ -1,13 +1,12 @@
 import openai
 import os
 from django.http import JsonResponse
-from myApp.models import *
 from django.views import View
 import json
 import datetime
 
 # openai.organization = "org-fBoqj45hvJisAEGMR5cvPnDS"
-openai.api_key = "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"
+openai.api_key = "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"
 
 text = """class getEmail(View):
     def post(self, request):
@@ -30,6 +29,14 @@ text = """class getEmail(View):
         response['data'] = email
         return JsonResponse(response)"""
 
+model = openai.ChatCompletion.create(
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "请针对以下代码给我生成单元测试代码," + text+", speak English"},
+    ]
+)
+print(model)
 
 class UnitTest(View):
     def post(self, request):
@@ -44,7 +51,7 @@ class UnitTest(View):
           model="gpt-3.5-turbo",
           messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "请针对以下代码给我生成单元测试代码,"+text},
+                {"role": "user", "content": "请针对以下代码给我生成单元测试代码,"+text+", speak English"},
             ]
         )
 
@@ -67,7 +74,7 @@ class CodeReview(View):
           model="gpt-3.5-turbo",
           messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
-                {"role": "user", "content": "请针对以下代码进行代码分析,"+text},
+                {"role": "user", "content": "请针对以下代码进行代码分析,"+text+", speak English"},
             ]
         )
 

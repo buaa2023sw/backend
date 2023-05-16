@@ -13,20 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-import os
 
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
 
 from myApp import userdevelop, manager, userBasic, userPlan, debug, AI
 from myApp import notice
 from django.urls import re_path
-from django.conf import settings
-from django.views.static import serve
+from myApp import chatConsumer
+
 
 websocket_urlpatterns = [
-
+    re_path(r"ws/chat/(?P<userId>\w+)/(?P<roomId>\w+)/$",
+            chatConsumer.ChatConsumer.as_asgi()),
 ]
 
 urlpatterns = [
