@@ -68,7 +68,7 @@ class ChatConsumer(WebsocketConsumer):
         send_time = str(event['send_time'])
 
         # set the message status to 'checked'
-        for message in Message.objects.filter(send_time = send_time):
+        for message in Message.objects.filter(time = send_time):
             if message.receive_user.id == self.user_id:
                 message.status = 'C'
                 message.save()
