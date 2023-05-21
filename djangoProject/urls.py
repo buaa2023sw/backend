@@ -24,7 +24,7 @@ from myApp import chatConsumer
 
 
 websocket_urlpatterns = [
-    re_path(r"ws/chat/(?P<userId>\w+)/(?P<roomId>\w+)/$",
+    re_path(r"ws/chat/(?P<userId>\w+)/(?P<roomId>\w+)$",
             chatConsumer.ChatConsumer.as_asgi()),
 ]
 
