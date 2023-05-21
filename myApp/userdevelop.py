@@ -476,7 +476,11 @@ class GetContent(View):
       os.system("cd " + localPath + " && git checkout " + branch + " && git pull")
       filePath = localPath + path#os.path.join(localPath, path)
       DBG(filePath)
-      data = open(filePath).read()
+      data = "警告：这是一个二进制文件，请登录 github 查看"
+      try:
+        data = open(filePath).read()
+      except Exception as e:
+        pass
       response["data"] = data
       releaseSemaphore(repoId)
     except Exception as e:
