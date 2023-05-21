@@ -79,7 +79,7 @@ class ChatConsumer(WebsocketConsumer):
             'content': event['message'],
             'senderName': event['send_user_name'],
             'senderId': event['send_user_id'],
-            'time': event['send_time']
+            'time': str(event['send_time'])
         }))
 
 
