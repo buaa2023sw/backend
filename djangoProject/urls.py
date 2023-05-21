@@ -54,6 +54,7 @@ urlpatterns = [
     path('api/develop/getContent', userdevelop.GetContent.as_view()),
     path('api/register', userBasic.register),
     path('api/login', userBasic.login),
+    path('api/getUserInfo', userBasic.get_user_information),
     path('api/user/information/password', userBasic.modify_password),
     path('api/showProfile', userBasic.show),
     path('api/editProfile', userBasic.modify_information),
