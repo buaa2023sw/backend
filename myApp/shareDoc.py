@@ -26,12 +26,13 @@ def userDocListTemplate(userId, projectId, table):
   data = []
   userAccessEntries = table.objects.filter(user_id=userId)
   for userAccess in userAccessEntries:
-    docEntry = Document.objects.get(id=userAccess.doc_id)
-    ownerName = User.objects.get(id=docEntry.user_id).name
+    docEntry = Document.objects.get(id=userAccess.doc_id.id)
+    ownerName = User.objects.get(id=docEntry.user_id.id).name
     data.append({"id" : docEntry.id, 
                  "name" : docEntry.name, 
                  "ownerName" : ownerName,
                  "updateTime" : docEntry.time,
+                 "outline" : docEntry.outline,
                  "content" : docEntry.content})
   response["data"] = data
   return response
@@ -46,7 +47,7 @@ class UserDocList(View):
     try:
       response = userDocListTemplate(kwargs.get('userId'), kwargs.get('projectId'), UserAccessDoc)
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
 class UserCollectDocList(View):
@@ -71,6 +72,10 @@ def addDocToCollect(userId, projectId, docId):
   userProject = isUserInProject(userId, projectId)
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
+  docprev = UserCollectDoc.objects.filter(user_id=User.objects.get(id=userId), 
+                 doc_id=Document.objects.get(id=docId))
+  if len(docprev) > 0:
+    return genResponseStateInfo(response, 3, "doc already in collect")
   UserCollectDoc(user_id=User.objects.get(id=userId), 
                  doc_id=Document.objects.get(id=docId)).save()
   return response
@@ -124,7 +129,7 @@ def userCreateDoc(userId, projectId, name, outline, content, accessUserId):
   userProject = isUserInProject(userId, projectId)
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
-  prevDoc = Document.objects.filter(name=name, user_id=userId, project_id=projectId)
+  prevDoc = Document.objects.filter(name=name, project_id=projectId)
   if len(prevDoc) > 0:
     return genResponseStateInfo(response, 3, "duplicate doc")
   user = User.objects.get(id=userId)
@@ -149,7 +154,7 @@ class UserCreateDoc(View):
                                  kwargs.get('outline'), kwargs.get('content'),
                                  kwargs.get('accessUserId'))
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
 def userEditDoc(userId, projectId, name, outline, content, accessUserId):
@@ -161,13 +166,13 @@ def userEditDoc(userId, projectId, name, outline, content, accessUserId):
   userProject = isUserInProject(userId, projectId)
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
-  Document.objects.filter(name=name, project_id=projectId, user_id=userId).update(
+  Document.objects.filter(name=name, project_id=projectId).update(
     outline=outline, content=content, time=datetime.datetime.now()
   )
-  doc = Document.objects.get(name=name, project_id=projectId, user_id=userId)
+  doc = Document.objects.get(name=name, project_id=projectId)
   for item in accessUserId:
     accessUser = User.objects.get(id=item)
-    UserAccessDoc.objects.get_or_create(user_id=item, doc_id=doc.id)
+    UserAccessDoc.objects.get_or_create(user_id=accessUser, doc_id=doc)
   return response
 
 class UserEditDoc(View):
@@ -183,7 +188,7 @@ class UserEditDoc(View):
                                  kwargs.get('outline'), kwargs.get('content'),
                                  kwargs.get('accessUserId'))
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
 def userDelDoc(userId, projectId, docId):

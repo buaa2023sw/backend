@@ -3,7 +3,7 @@ import datetime
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from models import Group, User, Message, UserGroup
+from myApp.models import Group, User, Message, UserGroup
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):

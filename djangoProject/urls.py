@@ -96,5 +96,5 @@ urlpatterns = [
     path('api/doc/userCreateDoc', shareDoc.UserCreateDoc.as_view()),
     path('api/doc/userEditDoc', shareDoc.UserEditDoc.as_view()),
     path('api/doc/userDelDoc', shareDoc.UserDelDoc.as_view()),
-    path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
+    # path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
 ]
