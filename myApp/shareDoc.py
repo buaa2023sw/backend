@@ -122,6 +122,7 @@ class DelDocFromCollect(View):
   
 def userCreateDoc(userId, projectId, name, outline, content, accessUserId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("#"+str(userId)+"#"+str(projectId)+"#"+str(name)+"#"+str(accessUserId))
   response = {'message': "get userCreateDoc ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
