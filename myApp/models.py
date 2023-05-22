@@ -105,8 +105,19 @@ class Document(models.Model):
   name          = models.CharField(max_length=255)
   outline       = models.TextField()
   content       = models.TextField()
+  time          = models.DateTimeField(auto_now_add=True)
   project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
   user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  
+class UserCollectDoc(models.Model):
+  id            = models.AutoField(primary_key=True)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE)
+  
+class UserAccessDoc(models.Model):
+  id            = models.AutoField(primary_key=True)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE)
   
 class Post(models.Model):
   id            = models.AutoField(primary_key=True)

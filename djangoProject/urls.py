@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from myApp import userdevelop, manager, userBasic, userPlan, debug, AI
+from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc
 from myApp import notice
 from django.urls import re_path
 from myApp import chatConsumer
@@ -89,4 +89,12 @@ urlpatterns = [
     path('api/plan/getEmail', userPlan.getEmail.as_view()),
     path('api/ai/UnitTest', AI.UnitTest.as_view()),
     path('api/ai/CodeReview', AI.CodeReview.as_view()),
+    path('api/doc/userDocList', shareDoc.UserDocList.as_view()),
+    path('api/doc/userCollectDocList', shareDoc.UserCollectDocList.as_view()),
+    path('api/doc/addDocToCollect', shareDoc.AddDocToCollect.as_view()),
+    path('api/doc/delDocFromCollect', shareDoc.DelDocFromCollect.as_view()),
+    path('api/doc/userCreateDoc', shareDoc.UserCreateDoc.as_view()),
+    path('api/doc/userEditDoc', shareDoc.UserEditDoc.as_view()),
+    path('api/doc/userDelDoc', shareDoc.UserDelDoc.as_view()),
+    path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
 ]
