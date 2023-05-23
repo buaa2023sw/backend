@@ -65,6 +65,7 @@ class UserCollectDocList(View):
 
 def addDocToCollect(userId, projectId, docId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("#"+str(userId)+"#"+str(projectId)+"#"+str(docId))
   response = {'message': "get addDocToCollect ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -91,7 +92,7 @@ class AddDocToCollect(View):
       response = addDocToCollect(kwargs.get('userId'), 
                                  kwargs.get('projectId'), kwargs.get('docId'))
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
   
 def delDocFromCollect(userId, projectId, docId):
