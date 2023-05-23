@@ -16,6 +16,7 @@ from myApp.userdevelop import *
 
 def userDocListTemplate(userId, projectId, table):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("#" + str(userId)+"#"+str(projectId)+"#"+str(table))
   response = {'message': "get userDocListTemplate ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -60,7 +61,7 @@ class UserCollectDocList(View):
     try:
       response = userDocListTemplate(kwargs.get('userId'), kwargs.get('projectId'), UserCollectDoc)
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
 def addDocToCollect(userId, projectId, docId):
@@ -97,6 +98,7 @@ class AddDocToCollect(View):
   
 def delDocFromCollect(userId, projectId, docId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("#"+str(userId)+"#"+str(projectId)+"#"+str(docId))
   response = {'message': "get delDocFromCollect ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -118,7 +120,7 @@ class DelDocFromCollect(View):
       response = delDocFromCollect(kwargs.get('userId'), 
                                  kwargs.get('projectId'), kwargs.get('docId'))
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
   
 def userCreateDoc(userId, projectId, name, outline, content, accessUserId):
@@ -216,7 +218,7 @@ class UserDelDoc(View):
       response = userDelDoc(kwargs.get('userId'), 
                                  kwargs.get('projectId'), kwargs.get('docId'))
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
 def docTimeUpdate(userId, projectId, docId, updateTime):
@@ -243,6 +245,6 @@ class DocTimeUpdate(View):
                                  kwargs.get('projectId'), kwargs.get('docId'),
                                  kwargs.get('updateTime'))
     except Exception as e:
-      return JsonResponse({'message': "error in logic func", "errcode": -1}) 
+      return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
   
