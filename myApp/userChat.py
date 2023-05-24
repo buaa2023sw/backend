@@ -88,7 +88,7 @@ def create_public_group(request):
 
     association = UserGroup(
         user = currentUser,
-        group = group.id,
+        group = group,
         role = 'A'
     )
     association.save()
@@ -97,7 +97,7 @@ def create_public_group(request):
         user = User.objects.get(id=user_info['userId'])
         association = UserGroup(
             user = user,
-            group = group.id,
+            group = group,
             role = 'A'
         )
         association.save()
@@ -124,14 +124,14 @@ def create_private_group(request):
 
     association = UserGroup(
         user = currentUser,
-        group = group.id,
+        group = group,
         role = 'A'
     )
     association.save()
     user = User.objects.get(id=kwargs.get('UserId'))
     association = UserGroup(
         user = user,
-        group = group.id,
+        group = group,
         role = 'A'
     )
     association.save()
