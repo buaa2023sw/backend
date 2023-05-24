@@ -1,4 +1,4 @@
-from myApp.models import Group, UserGroup
+from myApp.models import *
 from djangoProject.settings import response_json
 import datetime
 import json
@@ -34,7 +34,7 @@ def get_user_public_groups(request):
 
     discussions = []
     for association in UserGroup.objects.filter(user = userId):
-        group = Group.objects.get(id = association.group)
+        group = Group.objects.get(id = association.group.id)
         if group.type == 'PUB' and group.project_id == projectId:
             discussions.append({
                 'roomId': group.id,
@@ -58,7 +58,7 @@ def get_user_private_groups(request):
 
     privates = []
     for association in UserGroup.objects.filter(user = userId):
-        group = Group.objects.get(id = association.group)
+        group = Group.objects.get(id = association.group.id)
         if group.type == 'PRI' and group.project_id == projectId:
             privates.append({
                 'roomId': group.id,
@@ -76,26 +76,29 @@ def get_user_private_groups(request):
 
 def create_public_group(request):
     kwargs: dict = json.loads(request.body)
-
+    project = Project.objects.get(id=kwargs.get('projectId'))
+    currentUser = User.objects.get(id=kwargs.get('currentUserId'))
     group = Group(
         name = kwargs.get('roomName'),
         outline = kwargs.get('outline'),
-        project_id = int(kwargs.get('projectId')),
+        project_id = project,
         type = 'PUB'
     )
     group.save()
 
     association = UserGroup(
-        user = int(kwargs.get('currentUserId')),
-        group = group.id,
+        user = currentUser,
+        group = group,
         role = 'A'
     )
     association.save()
 
     for user_info in kwargs.get('users'):
+        
+        user = User.objects.get(id=user_info)
         association = UserGroup(
-            user = int(user_info['userId']),
-            group = group.id,
+            user = user,
+            group = group,
             role = 'A'
         )
         association.save()
@@ -110,25 +113,26 @@ def create_public_group(request):
 
 def create_private_group(request):
     kwargs: dict = json.loads(request.body)
-
+    project = Project.objects.get(id=kwargs.get('projectId'))
+    currentUser = User.objects.get(id=kwargs.get('currentUserId'))
     group = Group(
         name = kwargs.get('roomName'),
         outline = kwargs.get('outline'),
-        project_id = int(kwargs.get('projectId')),
+        project_id = project,
         type = 'PRI'
     )
     group.save()
 
     association = UserGroup(
-        user = int(kwargs.get('currentUserId')),
-        group = group.id,
+        user = currentUser,
+        group = group,
         role = 'A'
     )
     association.save()
-
+    user = User.objects.get(id=kwargs.get('UserId'))
     association = UserGroup(
-        user = int(kwargs.get('UserId')),
-        group = group.id,
+        user = user,
+        group = group,
         role = 'A'
     )
     association.save()
