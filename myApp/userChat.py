@@ -35,7 +35,7 @@ def get_user_public_groups(request):
     discussions = []
     for association in UserGroup.objects.filter(user = userId):
         group = Group.objects.get(id = association.group.id)
-        if group.type == 'PUB' and group.project_id == projectId:
+        if group.type == 'PUB' and group.project_id_id == projectId:
             discussions.append({
                 'roomId': group.id,
                 'roomName': group.name,
