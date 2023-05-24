@@ -6,7 +6,7 @@ import json
 import datetime
 
 # openai.organization = "org-fBoqj45hvJisAEGMR5cvPnDS"
-openai.api_key = "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"
+openai.api_key = "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"
 
 text = """class getEmail(View):
     def post(self, request):
@@ -29,14 +29,14 @@ text = """class getEmail(View):
         response['data'] = email
         return JsonResponse(response)"""
 
-model = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "请针对以下代码给我生成单元测试代码," + text+", speak English"},
-    ]
-)
-print(model)
+# model = openai.ChatCompletion.create(
+#     model="gpt-3.5-turbo",
+#     messages=[
+#         {"role": "system", "content": "You are a helpful assistant."},
+#         {"role": "user", "content": "请针对以下代码给我生成单元测试代码," + text+", speak English"},
+#     ]
+# )
+# print(model)
 
 class UnitTest(View):
     def post(self, request):
