@@ -1,4 +1,4 @@
-from myApp.models import Group, UserGroup
+from myApp.models import *
 from djangoProject.settings import response_json
 import datetime
 import json
@@ -76,11 +76,11 @@ def get_user_private_groups(request):
 
 def create_public_group(request):
     kwargs: dict = json.loads(request.body)
-
+    project = Project.objects.get(id=kwargs.get('projectId'))
     group = Group(
         name = kwargs.get('roomName'),
         outline = kwargs.get('outline'),
-        project_id = int(kwargs.get('projectId')),
+        project_id = project,
         type = 'PUB'
     )
     group.save()
