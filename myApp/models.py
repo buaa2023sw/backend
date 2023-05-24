@@ -69,6 +69,13 @@ class Group(models.Model):
   id            = models.AutoField(primary_key=True)
   name          = models.CharField(max_length=255)
   outline       = models.TextField()
+  PRIVATE = 'PRI'
+  PUBLIC = 'PUB'
+  TYPE_LIST = (
+    (PRIVATE, 'PRIVATE'),
+    (PUBLIC, 'PUBLIC')
+  )
+  type          = models.CharField(max_length=5, choices=TYPE_LIST)
   project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 class Notice(models.Model):

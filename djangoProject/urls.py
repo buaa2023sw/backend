@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc
-from myApp import notice
+from myApp import notice, userChat
 from django.urls import re_path
 from myApp import chatConsumer
 
@@ -96,5 +96,10 @@ urlpatterns = [
     path('api/doc/userCreateDoc', shareDoc.UserCreateDoc.as_view()),
     path('api/doc/userEditDoc', shareDoc.UserEditDoc.as_view()),
     path('api/doc/userDelDoc', shareDoc.UserDelDoc.as_view()),
+    path('api/chat/discussions', userChat.get_user_public_groups),
+    path('api/chat/private', userChat.get_user_private_groups),
+    path('api/chat/getRoomMessages', userChat.get_room_content),
+    path('api/chat/createRoom', userChat.create_public_group),
+    path('api/chat/createPrivate', userChat.create_private_group),
     # path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
 ]
