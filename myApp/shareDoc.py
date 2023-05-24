@@ -16,7 +16,7 @@ from myApp.userdevelop import *
 
 def userDocListTemplate(userId, projectId, table):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
-  DBG("#" + str(userId)+"#"+str(projectId)+"#"+str(table))
+  DBG("param" + str(locals()))
   response = {'message': "get userDocListTemplate ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -25,16 +25,27 @@ def userDocListTemplate(userId, projectId, table):
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
   data = []
-  userAccessEntries = table.objects.filter(user_id=userId)
-  for userAccess in userAccessEntries:
-    docEntry = Document.objects.get(id=userAccess.doc_id.id)
+  tableEntries = table.objects.filter(user_id=userId)
+  for entry in tableEntries:
+    docEntry = Document.objects.get(id=entry.doc_id.id)
     ownerName = User.objects.get(id=docEntry.user_id.id).name
+
+    userAccessEntries = UserAccessDoc.objects.filter(doc_id=entry.doc_id.id)
+    accessUser = []
+    for entry in userAccessEntries:
+      userName = User.objects.get(id=entry.user_id.id)
+      accessUser.append({"id" : entry.user_id.id, "name" : userName})
+    
+    isCollect = UserAccessDoc.objects.filter(user_id=userId).exists()
+    
     data.append({"id" : docEntry.id, 
                  "name" : docEntry.name, 
                  "ownerName" : ownerName,
                  "updateTime" : docEntry.time,
                  "outline" : docEntry.outline,
-                 "content" : docEntry.content})
+                 "content" : docEntry.content,
+                 "accessUser" :accessUser,
+                 "isCollect" : isCollect})
   response["data"] = data
   return response
     
@@ -66,7 +77,7 @@ class UserCollectDocList(View):
 
 def addDocToCollect(userId, projectId, docId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
-  DBG("#"+str(userId)+"#"+str(projectId)+"#"+str(docId))
+  DBG("param" + str(locals()))
   response = {'message': "get addDocToCollect ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -98,7 +109,7 @@ class AddDocToCollect(View):
   
 def delDocFromCollect(userId, projectId, docId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
-  DBG("#"+str(userId)+"#"+str(projectId)+"#"+str(docId))
+  DBG("param" + str(locals()))
   response = {'message': "get delDocFromCollect ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -125,7 +136,7 @@ class DelDocFromCollect(View):
   
 def userCreateDoc(userId, projectId, name, outline, content, accessUserId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
-  DBG("#"+str(userId)+"#"+str(projectId)+"#"+str(name)+"#"+str(accessUserId))
+  DBG("param" + str(locals()))
   response = {'message': "get userCreateDoc ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -163,6 +174,7 @@ class UserCreateDoc(View):
 
 def userEditDoc(userId, projectId, name, outline, content, accessUserId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("param" + str(locals()))
   response = {'message': "get userEditDoc ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -197,6 +209,7 @@ class UserEditDoc(View):
 
 def userDelDoc(userId, projectId, docId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("param" + str(locals()))
   response = {'message': "get userDelDoc ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
@@ -223,6 +236,7 @@ class UserDelDoc(View):
 
 def docTimeUpdate(userId, projectId, docId, updateTime):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("param" + str(locals()))
   response = {'message': "get docTimeUpdate ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
