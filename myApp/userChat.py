@@ -94,7 +94,8 @@ def create_public_group(request):
     association.save()
 
     for user_info in kwargs.get('users'):
-        user = User.objects.get(id=user_info['userId'])
+        
+        user = User.objects.get(id=user_info)
         association = UserGroup(
             user = user,
             group = group,
