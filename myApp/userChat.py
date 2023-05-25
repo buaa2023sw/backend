@@ -40,7 +40,13 @@ def get_user_public_groups(request):
             discussions.append({
                 'roomId': group.id,
                 'roomName': group.name,
-                'outline': group.outline
+                'outline': group.outline,
+                'users': [
+                    {
+                        'userId': asso.user.id,
+                        'userName': asso.user.name
+                    } for asso in UserGroup.objects.filter(group = group)
+                ]
             })
 
     return response_json(
