@@ -259,7 +259,7 @@ def modify_information(request):
                 'email': user.email,
                 'projects': projects,
                 'status': user.status,
-                'topic': user.color, 
+                'topic': user.color,
             }
         )
     except Exception as exp:
