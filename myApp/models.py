@@ -146,6 +146,10 @@ class UserAccessDoc(models.Model):
   id            = models.AutoField(primary_key=True)
   user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
   doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE)
+  
+class UserDocLock(models.Model):
+  doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE, unique=True)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True)

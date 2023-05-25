@@ -171,19 +171,17 @@ class UserCreateDoc(View):
       return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
-def userEditDoc(userId,docId, projectId, name, outline, content, accessUserId):
+def userEditDocOther(userId,docId, projectId, name, accessUserId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
   DBG("param" + str(locals()))
-  response = {'message': "get userEditDoc ok", "errcode": 0}
+  response = {'message': "get userEditDocOther ok", "errcode": 0}
   project = isProjectExists(projectId)
   if project == None:
     return genResponseStateInfo(response, 1, "project does not exists")
   userProject = isUserInProject(userId, projectId)
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
-  Document.objects.filter(id=docId).update(
-    name=name, outline=outline, content=content, time=datetime.datetime.now()
-  )
+  Document.objects.filter(id=docId).update(name=name)
   doc = Document.objects.get(id=docId)
   for item in accessUserId:
     accessUser = User.objects.get(id=item)
@@ -193,9 +191,14 @@ def userEditDoc(userId,docId, projectId, name, outline, content, accessUserId):
     thisUserId = userAccessEntry.user_id.id
     if accessUserId.count(thisUserId) == 0:
       UserAccessDoc.objects.filter(doc_id=docId, user_id=thisUserId).delete()
+  allUserCollectEntries = UserCollectDoc.objects.filter(doc_id=docId)
+  for userCollectEntry in allUserCollectEntries:
+    thisUserId = userCollectEntry.user_id.id
+    if accessUserId.count(thisUserId) == 0:
+      UserCollectDoc.objects.filter(doc_id=docId, user_id=thisUserId).delete()
   return response
 
-class UserEditDoc(View):
+class UserEditDocOther(View):
   def post(self, request):
     response = {'message': "404 not success", "errcode": -1}
     try:
@@ -203,13 +206,103 @@ class UserEditDoc(View):
     except Exception:
       return JsonResponse(response)
     try:
-      response = userEditDoc(kwargs.get('userId'),kwargs.get('docId'),
+      response = userEditDocOther(kwargs.get('userId'),kwargs.get('docId'),
                                  kwargs.get('projectId'), kwargs.get('name'),
-                                 kwargs.get('outline'), kwargs.get('content'),
                                  kwargs.get('accessUserId'))
     except Exception as e:
       return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
+
+def userEditDocContent(userId,docId, projectId, content):
+  DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("param" + str(locals()))
+  response = {'message': "get userEditDocContent ok", "errcode": 0}
+  project = isProjectExists(projectId)
+  if project == None:
+    return genResponseStateInfo(response, 1, "project does not exists")
+  userProject = isUserInProject(userId, projectId)
+  if userProject == None:
+    return genResponseStateInfo(response, 2, "user not in project")
+  Document.objects.filter(id=docId).update(
+    content=content, time=datetime.datetime.now()
+  )
+  return response
+
+class UserEditDocContent(View):
+  def post(self, request):
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    try:
+      response = userEditDocContent(kwargs.get('userId'),kwargs.get('docId'),
+                                 kwargs.get('projectId'), kwargs.get('content'))
+    except Exception as e:
+      return JsonResponse({'message': str(e), "errcode": -1}) 
+    return JsonResponse(response)
+  
+def userGetDocLock(userId, projectId, docId):
+  DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("param" + str(locals()))
+  response = {'message': "get userGetDocLock ok", "errcode": 0}
+  project = isProjectExists(projectId)
+  if project == None:
+    return genResponseStateInfo(response, 1, "project does not exists")
+  userProject = isUserInProject(userId, projectId)
+  if userProject == None:
+    return genResponseStateInfo(response, 2, "user not in project")
+  
+  doc = Document.objects.get(id=docId)
+  user = User.objects.get(id=userId)
+  try:
+    UserDocLock(doc_id=doc, user_id=user).save()
+  except Exception as e:
+    return genResponseStateInfo(response, 3, "doc is being edited")
+  return response
+
+class UserGetDocLock(View):
+  def post(self, request):
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    try:
+      response = userGetDocLock(kwargs.get('userId'),kwargs.get('projectId'),
+                                kwargs.get('docId'))
+    except Exception as e:
+      return JsonResponse({'message': str(e), "errcode": -1}) 
+    return JsonResponse(response)
+
+def userReleaseDocLock(userId, projectId, docId):
+  DBG("---- in " + sys._getframe().f_code.co_name + " ----")
+  DBG("param" + str(locals()))
+  response = {'message': "get userReleaseLock ok", "errcode": 0}
+  project = isProjectExists(projectId)
+  if project == None:
+    return genResponseStateInfo(response, 1, "project does not exists")
+  userProject = isUserInProject(userId, projectId)
+  if userProject == None:
+    return genResponseStateInfo(response, 2, "user not in project")
+
+  UserDocLock.objects.filter(doc_id=docId, user_id=userId).delete()
+  return response
+
+class UserReleaseDocLock(View):
+  def post(self, request):
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    try:
+      response = userReleaseDocLock(kwargs.get('userId'),kwargs.get('projectId'),
+                                kwargs.get('docId'))
+    except Exception as e:
+      return JsonResponse({'message': str(e), "errcode": -1}) 
+    return JsonResponse(response)
+
 
 def userDelDoc(userId, projectId, docId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
