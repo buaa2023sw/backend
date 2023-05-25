@@ -44,6 +44,7 @@ class watchAllProject(View):
                     i.project_id.create_time.day),
                 "managerId": i.project_id.manager_id.id,
                 "managerName": i.project_id.manager_id.name,
+                "access":i.project_id.access
             })
         response['errcode'] = 0
         response['message'] = "success"
@@ -926,6 +927,7 @@ class ProjectInfo(View):
                 i.create_time.day),
             "managerId": i.manager_id.id,
             "managerName": i.manager_id.name,
+            "access":i.access
         }
 
         response['errcode'] = 0
