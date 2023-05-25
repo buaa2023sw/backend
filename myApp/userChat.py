@@ -9,6 +9,7 @@ def get_room_content(request):
 
     roomId = int(kwargs.get('roomId'))
     group = Group.objects.get(id = roomId)
+    user = User.objects.get(id = int(request.session['userId']))
 
     messages = [
         {
@@ -16,7 +17,7 @@ def get_room_content(request):
             'senderName': message.send_user.name,
             'senderId': message.send_user.id,
             'time': message.time
-        } for message in Message.objects.filter(group_id = roomId)
+        } for message in Message.objects.filter(group_id = roomId, receive_user = user)
     ]
 
     return response_json(
