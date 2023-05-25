@@ -17,12 +17,14 @@ def get_room_content(request):
             'senderName': message.send_user.name,
             'senderId': message.send_user.id,
             'time': message.time
-        } for message in group.message_set
+        } for message in Message.objects.filter(group_id = roomId)
     ]
 
     return response_json(
         errcode = SUCCESS,
-        data = messages
+        data = {
+            'messages': messages
+        }
     )
 
 
