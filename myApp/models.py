@@ -17,6 +17,19 @@ class User(models.Model):
         (ILLEGAL, 'ILLEGAL'),
         (ADMIN, 'ADMIN'),
     )
+    RED = 'A'
+    ORANGE = 'B'
+    GREEN = 'C'
+    BLUE = 'D'
+    PURPLE = 'E'
+    COLOR_LIST = (
+        (RED, 'RED'),
+        (ORANGE, 'ORG'),
+        (GREEN, 'GREEN'),
+        (BLUE, 'BLUE'),
+        (PURPLE, 'PUR')
+    )
+    color  = models.CharField(max_length=10, choices=COLOR_LIST)
     status = models.CharField(max_length=2, choices=STATUS_LIST)
 
 

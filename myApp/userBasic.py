@@ -62,10 +62,13 @@ def register(request):
         )
 
     # Step 3. Create
-    u = User(name=username, password=kwargs.get('password'),
-             email=email, status=User.NORMAL,
-             create_time=datetime.datetime.now(),
-             last_login_time=datetime.datetime.now())
+    u = User(name=username,
+             password = kwargs.get('password'),
+             email = email,
+             status = User.NORMAL,
+             color = 'D',
+             create_time = datetime.datetime.now(),
+             last_login_time = datetime.datetime.now())
     u.save()
     return response_json(
         errcode = Success,
@@ -122,7 +125,8 @@ def login(request):
             'name': user.name,
             'email': user.email,
             'projects': projects,
-            'status': user.status
+            'status': user.status,
+            'topic': user.color,
         }
     )
 
