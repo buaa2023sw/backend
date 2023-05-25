@@ -836,7 +836,7 @@ class showContribute(View):
             cb = 0
             tasks = UserTask.objects.filter(user_id=i)
             for task in tasks:
-                j=task.task_id
+                j = task.task_id
                 if j.project_id_id == projectId:
                     cb += j.contribute_level
             ans[i.name] = cb
@@ -891,5 +891,44 @@ class changeOrder(View):
         task2.save()
 
         response['errcode'] = 0
+        response['message'] = "success"
+        return JsonResponse(response)
+
+
+class ProjectInfo(View):
+    def post(self, request):
+        response = {'errcode': 0, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        if User.objects.filter(id=request.user.id, status=User.ADMIN).count() == 0:
+            response['errcode'] = 3
+            response['message'] = "user not admin"
+            response['data'] = request.user.id
+            return JsonResponse(response)
+
+        i = Project.objects.get(id=projectId)
+        ans = {
+            "projectId": i.id,
+            "projectName": i.name,
+            "projectIntro": i.outline,
+            "state": i.status,
+            "deadline": str(i.create_time.year) + "-" + str(i.create_time.month) + "-" + str(
+                i.create_time.day),
+            "managerId": i.manager_id.id,
+            "managerName": i.manager_id.name,
+        }
+
+        response['errcode'] = 0
+        response['data'] = ans
         response['message'] = "success"
         return JsonResponse(response)
