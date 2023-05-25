@@ -1,6 +1,5 @@
 from myApp.models import *
 from djangoProject.settings import response_json
-import datetime
 import json
 
 SUCCESS = 0
@@ -10,6 +9,7 @@ def get_room_content(request):
 
     roomId = int(kwargs.get('roomId'))
     group = Group.objects.get(id = roomId)
+    user = User.objects.get(id = int(request.session['userId']))
 
     messages = [
         {
@@ -17,12 +17,14 @@ def get_room_content(request):
             'senderName': message.send_user.name,
             'senderId': message.send_user.id,
             'time': message.time
-        } for message in group.message_set
+        } for message in Message.objects.filter(group_id = roomId, receive_user = user)
     ]
 
     return response_json(
         errcode = SUCCESS,
-        data = messages
+        data = {
+            'messages': messages
+        }
     )
 
 
@@ -39,7 +41,13 @@ def get_user_public_groups(request):
             discussions.append({
                 'roomId': group.id,
                 'roomName': group.name,
-                'outline': group.outline
+                'outline': group.outline,
+                'users': [
+                    {
+                        'userId': asso.user.id,
+                        'userName': asso.user.name
+                    } for asso in UserGroup.objects.filter(group = group)
+                ]
             })
 
     return response_json(
@@ -94,7 +102,6 @@ def create_public_group(request):
     association.save()
 
     for user_info in kwargs.get('users'):
-        
         user = User.objects.get(id=user_info)
         association = UserGroup(
             user = user,
@@ -138,8 +145,8 @@ def create_private_group(request):
     association.save()
 
     return response_json(
-        errcode=SUCCESS,
-        data={
+        errcode = SUCCESS,
+        data = {
             'roomId': group.id,
         }
     )
@@ -148,3 +155,20 @@ def create_private_group(request):
 def add_user_to_group(request):
     kwargs: dict = json.loads(request.body)
 
+    user = User.objects.get(id = int(kwargs.get('userId')))
+    group = Group.objects.get(id = int(kwargs.get('roomId')))
+
+    association = UserGroup.objects.filter(user = user, group = group)
+    if not len(association) == 0:
+        return response_json(
+            errcode = SUCCESS,
+        )
+    association = UserGroup(
+        user = user,
+        group = group,
+        role = 'A'
+    )
+    association.save()
+    return response_json(
+        errcode = SUCCESS
+    )

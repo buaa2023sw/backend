@@ -40,11 +40,12 @@ class ChatConsumer(WebsocketConsumer):
         # generate the message for all users in this room,
         # and flag these messages' unchecking status.
         for association in UserGroup.objects.filter(group_id = self.room.id):
+            check_status = 'UC'
             if association.user.id == send_user_id:
-                continue
+                check_status = 'C'
             message = Message(
                 type = 'A',
-                status = 'UC',
+                status = check_status,
                 content = message_content,
                 time = send_time,
                 group_id = self.room,
