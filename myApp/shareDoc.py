@@ -36,7 +36,7 @@ def userDocListTemplate(userId, projectId, table):
       userName = User.objects.get(id=entry.user_id.id).name
       accessUser.append({"id" : entry.user_id.id, "name" : userName})
     
-    isCollect = UserCollectDoc.objects.filter(user_id=userId).exists()
+    isCollect = UserCollectDoc.objects.filter(user_id=userId, doc_id=docEntry.id).exists()
     
     data.append({"id" : docEntry.id, 
                  "name" : docEntry.name, 
