@@ -48,9 +48,9 @@ class ChatConsumer(WebsocketConsumer):
                 status = check_status,
                 content = message_content,
                 time = send_time,
-                group_id = self.room.id,
-                send_user = send_user.id,
-                receive_user = association.user.id
+                group_id = self.room,
+                send_user = send_user,
+                receive_user = association.user
             )
             message.save()
 
