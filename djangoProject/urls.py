@@ -103,6 +103,6 @@ urlpatterns = [
     path('api/chat/getRoomMessages', userChat.get_room_content),
     path('api/chat/createRoom', userChat.create_public_group),
     path('api/chat/createPrivate', userChat.create_private_group),
-    path('api/chat/addPerson', userChat.add_user_to_group), 
+    path('api/chat/addPerson', userChat.add_user_to_group),
     # path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
 ]
