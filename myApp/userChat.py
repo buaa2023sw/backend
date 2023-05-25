@@ -1,6 +1,5 @@
 from myApp.models import *
 from djangoProject.settings import response_json
-import datetime
 import json
 
 SUCCESS = 0
