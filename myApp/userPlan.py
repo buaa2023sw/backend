@@ -164,6 +164,7 @@ class addTask(View):
         deadline = datetime.datetime(year=2030, month=12, day=31)
         task = Task.objects.create(name=name, project_id=project, deadline=deadline)
         task.status = Task.NOTSTART
+        task.order = task.id
         task.save()
 
         response['errcode'] = 0
@@ -249,7 +250,7 @@ class showTaskList(View):
             response['data'] = None
             return JsonResponse(response)
 
-        taskList = Task.objects.filter(project_id_id=projectId, parent_id=None)
+        taskList = Task.objects.filter(project_id_id=projectId, parent_id=None).order_by("order")
         data = []
         cur_time = datetime.datetime.now()
         for i in taskList:
@@ -360,7 +361,11 @@ class completeTask(View):
             response['message'] = "permission denied"
             response['data'] = None
             return JsonResponse(response)
+
+        intro = kwargs.get("intro", "")
+
         task.status = Task.COMPLETED
+        task.outline = intro
         task.complete_time = datetime.datetime.now()
         task.save()
 
@@ -390,7 +395,7 @@ class watchMyTask(View):
             response['data'] = None
             return JsonResponse(response)
 
-        taskList = Task.objects.filter(project_id_id=projectId, parent_id=None)
+        taskList = Task.objects.filter(project_id_id=projectId, parent_id=None).order_by("order")
         cur_time = datetime.datetime.now()
         data = []
         for i in taskList:
@@ -527,7 +532,7 @@ class modifyRole(View):
             return JsonResponse(response)
 
         if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
-                                      role=UserProject.DEVELOPER).count() == 0:
+                                      role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "user not admin"
             response['data'] = None
@@ -618,7 +623,7 @@ class removeMember(View):
             return JsonResponse(response)
 
         if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
-                                      role=UserProject.DEVELOPER).count() == 0:
+                                      role=UserProject.NORMAL).count() > 0:
             response['errcode'] = 3
             response['message'] = "user not admin"
             response['data'] = None
@@ -799,4 +804,92 @@ class test(View):
         response['errcode'] = 0
         response['message'] = "success"
         response['data'] = ids
+        return JsonResponse(response)
+
+
+class showContribute(View):
+    def post(self, request):
+        response = {'errcode': 0, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        if UserProject.objects.filter(user_id=request.user, project_id_id=projectId,
+                                      role=UserProject.NORMAL).count() > 0:
+            response['errcode'] = 3
+            response['message'] = "user not admin"
+            response['data'] = None
+            return JsonResponse(response)
+
+        members = UserProject.objects.filter(project_id_id=projectId)
+        ans = {}
+        for member in members:
+            i = member.user_id
+            cb = 0
+            tasks = UserTask.objects.filter(user_id=i)
+            for task in tasks:
+                j=task.task_id
+                if j.project_id_id == projectId:
+                    cb += j.contribute_level
+            ans[i.name] = cb
+
+        response['errcode'] = 0
+        response['message'] = "success"
+        response['data'] = ans
+        return JsonResponse(response)
+
+
+class changeOrder(View):
+    def post(self, request):
+        response = {'errcode': 0, 'message': "404 not success"}
+        try:
+            kwargs: dict = json.loads(request.body)
+        except Exception:
+            return JsonResponse(response)
+
+        projectId = kwargs.get("projectId", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "project not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        task1Id = kwargs.get("task1Id", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task1 not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        task2Id = kwargs.get("task2Id", -1)
+        if Project.objects.filter(id=projectId).count() == 0:
+            response['errcode'] = 1
+            response['message'] = "task2 not exist"
+            response['data'] = None
+            return JsonResponse(response)
+
+        if task1Id == 0 or task2Id == 0:
+            response['errcode'] = 0
+            response['message'] = "not change"
+            return JsonResponse(response)
+
+        task1 = Task.objects.get(id=task1Id)
+        task2 = Task.objects.get(id=task2Id)
+        order1 = task1.order
+        order2 = task2.order
+        task1.order = order2
+        task2.order = order1
+        task1.save()
+        task2.save()
+
+        response['errcode'] = 0
+        response['message'] = "success"
         return JsonResponse(response)
