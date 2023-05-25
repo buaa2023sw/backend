@@ -171,7 +171,7 @@ class UserCreateDoc(View):
       return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
 
-def userEditDoc(userId, projectId, name, outline, content, accessUserId):
+def userEditDoc(userId,docId, projectId, name, outline, content, accessUserId):
   DBG("---- in " + sys._getframe().f_code.co_name + " ----")
   DBG("param" + str(locals()))
   response = {'message': "get userEditDoc ok", "errcode": 0}
@@ -181,13 +181,18 @@ def userEditDoc(userId, projectId, name, outline, content, accessUserId):
   userProject = isUserInProject(userId, projectId)
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
-  Document.objects.filter(name=name, project_id=projectId).update(
-    outline=outline, content=content, time=datetime.datetime.now()
+  Document.objects.filter(id=docId).update(
+    name=name, outline=outline, content=content, time=datetime.datetime.now()
   )
-  doc = Document.objects.get(name=name, project_id=projectId)
+  doc = Document.objects.get(id=docId)
   for item in accessUserId:
     accessUser = User.objects.get(id=item)
     UserAccessDoc.objects.get_or_create(user_id=accessUser, doc_id=doc)
+  allUserAccessEntries = UserAccessDoc.objects.filter(doc_id=docId)
+  for userAccessEntry in allUserAccessEntries:
+    thisUserId = userAccessEntry.user_id.id
+    if accessUserId.count(thisUserId) == 0:
+      UserAccessDoc.objects.filter(doc_id=docId, user_id=thisUserId).delete()
   return response
 
 class UserEditDoc(View):
@@ -198,7 +203,7 @@ class UserEditDoc(View):
     except Exception:
       return JsonResponse(response)
     try:
-      response = userEditDoc(kwargs.get('userId'), 
+      response = userEditDoc(kwargs.get('userId'),kwargs.get('docId'),
                                  kwargs.get('projectId'), kwargs.get('name'),
                                  kwargs.get('outline'), kwargs.get('content'),
                                  kwargs.get('accessUserId'))
