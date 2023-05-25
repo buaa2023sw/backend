@@ -3,7 +3,7 @@ import datetime
 
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
-from models import Group, User, Message, UserGroup
+from myApp.models import Group, User, Message, UserGroup
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -56,7 +56,7 @@ class ChatConsumer(WebsocketConsumer):
         # send the message to others in this room.
         async_to_sync(self.channel_layer.group_send) (
             self.room_group_name, {
-                'type': '',
+                'type': 'chat_message',
                 'send_user_name': send_user.name,
                 'send_user_id': send_user.id,
                 'message': message_content,
@@ -68,7 +68,7 @@ class ChatConsumer(WebsocketConsumer):
         send_time = str(event['send_time'])
 
         # set the message status to 'checked'
-        for message in Message.objects.filter(send_time = send_time):
+        for message in Message.objects.filter(time = send_time):
             if message.receive_user.id == self.user_id:
                 message.status = 'C'
                 message.save()
@@ -76,10 +76,10 @@ class ChatConsumer(WebsocketConsumer):
 
         # send message to client
         self.send(text_data=json.dumps({
-            'content': event['message_content'],
+            'content': event['message'],
             'senderName': event['send_user_name'],
             'senderId': event['send_user_id'],
-            'time': event['send_time']
+            'time': str(event['send_time'])
         }))
 
 

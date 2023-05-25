@@ -7,6 +7,9 @@ import sys
 import inspect
 import datetime
 
+admin_name = "system"
+admin_pw = "bcb15f821479b4d5772bd0ca866c00ad5f926e3580720659cc80d39c9d09802a" # SHA256 for 111111
+
 class Command(BaseCommand):
   help = "delete all data in db and insert some data"
   
@@ -34,7 +37,7 @@ class Command(BaseCommand):
     "insert some data in data base"
     print("begin build data base")
     userListToInsert = list()
-    User(name="system",email="system@buaa.edu.cn",password="111111",
+    User(name=admin_name,email=admin_name+"@buaa.edu.cn",password=admin_pw,
          last_login_time=datetime.datetime.today(),status=User.ADMIN).save()
     Project(status=Project.INPROGRESS,access=Project.NORMAL ,name="system",
             outline="system",manager_id=User.objects.get(name="system"),progress=1).save()

@@ -13,20 +13,19 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-import os
 
 from django.contrib import admin
 from django.urls import path, include
-from django.views.generic import TemplateView
 
-from myApp import userdevelop, manager, userBasic, userPlan, debug, AI
-from myApp import notice
+from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc
+from myApp import notice, userChat
 from django.urls import re_path
-from django.conf import settings
-from django.views.static import serve
+from myApp import chatConsumer
+
 
 websocket_urlpatterns = [
-
+    re_path(r"ws/chat/(?P<userId>\w+)/(?P<roomId>\w+)$",
+            chatConsumer.ChatConsumer.as_asgi()),
 ]
 
 urlpatterns = [
@@ -51,8 +50,11 @@ urlpatterns = [
     path('api/develop/getCommitHistory', userdevelop.GetCommitHistory.as_view()),
     path('api/develop/getIssueList', userdevelop.GetIssueList.as_view()),
     path('api/develop/getPrList', userdevelop.GetPrList.as_view()),
+    path('api/develop/getFileTree', userdevelop.GetFileTree.as_view()),
+    path('api/develop/getContent', userdevelop.GetContent.as_view()),
     path('api/register', userBasic.register),
     path('api/login', userBasic.login),
+    path('api/getUserInfo', userBasic.get_user_information),
     path('api/user/information/password', userBasic.modify_password),
     path('api/showProfile', userBasic.show),
     path('api/editProfile', userBasic.modify_information),
@@ -88,5 +90,18 @@ urlpatterns = [
     path('api/ai/UnitTest', AI.UnitTest.as_view()),
     path('api/ai/CodeReview', AI.CodeReview.as_view()),
     path('api/plan/showContribute',userPlan.showContribute.as_view()),
-    path('api/plan/changeOrder',userPlan.changeOrder.as_view())
+    path('api/plan/changeOrder',userPlan.changeOrder.as_view()),
+    path('api/doc/userDocList', shareDoc.UserDocList.as_view()),
+    path('api/doc/userCollectDocList', shareDoc.UserCollectDocList.as_view()),
+    path('api/doc/addDocToCollect', shareDoc.AddDocToCollect.as_view()),
+    path('api/doc/delDocFromCollect', shareDoc.DelDocFromCollect.as_view()),
+    path('api/doc/userCreateDoc', shareDoc.UserCreateDoc.as_view()),
+    path('api/doc/userEditDoc', shareDoc.UserEditDoc.as_view()),
+    path('api/doc/userDelDoc', shareDoc.UserDelDoc.as_view()),
+    path('api/chat/discussions', userChat.get_user_public_groups),
+    path('api/chat/private', userChat.get_user_private_groups),
+    path('api/chat/getRoomMessages', userChat.get_room_content),
+    path('api/chat/createRoom', userChat.create_public_group),
+    path('api/chat/createPrivate', userChat.create_private_group),
+    # path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
 ]

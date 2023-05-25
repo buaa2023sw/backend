@@ -127,6 +127,33 @@ def login(request):
     )
 
 
+def get_user_information(request):
+    kwargs: dict = json.loads(request.body)
+
+    manager = User.objects.get(id = int(kwargs.get('managerId')))
+    if not manager.status == 'C':
+        return response_json(
+            errcode = 1,
+            message = 'not admin'
+        )
+    user = User.objects.get(id = int(kwargs.get('userId')))
+    projects = [{ 'id': p.id, 'name': p.name } for p in user.project_set.all()]
+    for up in UserProject.objects.filter(user_id = user.id):
+        project = Project.objects.filter(id = int(up.project_id.id)).first()
+        projects.append({'id': project.id, 'name': project.name})
+    return response_json(
+        errcode = Success,
+        message = Login_Success_Message,
+        data = {
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'projects': projects,
+            'status': user.status
+        }
+    )
+
+
 def modify_password(request):
     """
         modify password api
@@ -214,6 +241,7 @@ def modify_information(request):
         user.name = str(kwargs.get('userName'))
         user.email = str(kwargs.get('userEmail'))
         user.save()
+
         projects = [{'id': p.id, 'name': p.name} for p in user.project_set.all()]
         for up in UserProject.objects.filter(user_id=user.id):
             project = Project.objects.filter(id=int(up.project_id.id)).first()

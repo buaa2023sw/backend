@@ -76,7 +76,13 @@ class Group(models.Model):
     name = models.CharField(max_length=255)
     outline = models.TextField()
     project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
-
+    PRIVATE = 'PRI'
+    PUBLIC = 'PUB'
+    TYPE_LIST = (
+    (PRIVATE, 'PRIVATE'),
+    (PUBLIC, 'PUBLIC')
+    )
+    type          = models.CharField(max_length=5, choices=TYPE_LIST)
 
 class Notice(models.Model):
     id = models.AutoField(primary_key=True)
@@ -110,13 +116,23 @@ class Message(models.Model):
 
 
 class Document(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255)
-    outline = models.TextField()
-    content = models.TextField()
-    project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    id            = models.AutoField(primary_key=True)
+    name          = models.CharField(max_length=255)
+    outline       = models.TextField()
+    content       = models.TextField()
+    time          = models.DateTimeField(auto_now_add=True)
+    project_id    = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  
+class UserCollectDoc(models.Model):
+  id            = models.AutoField(primary_key=True)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE)
+  
+class UserAccessDoc(models.Model):
+  id            = models.AutoField(primary_key=True)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
+  doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE)
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True)
