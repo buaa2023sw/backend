@@ -272,7 +272,7 @@ def save_topic(request):
     kwargs: dict = json.loads(request.body)
 
     user = User.objects.get(id = int(request.session['userId']))
-    user.topic = kwargs.get('topic')
+    user.color = kwargs.get('topic')
     user.save()
 
     projects = [{ 'id': p.id, 'name': p.name } for p in user.project_set.all()]
