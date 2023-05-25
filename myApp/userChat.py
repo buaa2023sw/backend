@@ -95,7 +95,6 @@ def create_public_group(request):
     association.save()
 
     for user_info in kwargs.get('users'):
-        
         user = User.objects.get(id=user_info)
         association = UserGroup(
             user = user,
@@ -139,8 +138,8 @@ def create_private_group(request):
     association.save()
 
     return response_json(
-        errcode=SUCCESS,
-        data={
+        errcode = SUCCESS,
+        data = {
             'roomId': group.id,
         }
     )
@@ -149,3 +148,20 @@ def create_private_group(request):
 def add_user_to_group(request):
     kwargs: dict = json.loads(request.body)
 
+    user = User.objects.get(id = int(kwargs.get('userId')))
+    group = Group.objects.get(id = int(kwargs.get('roomId')))
+
+    association = UserGroup.objects.filter(user = user, group = group)
+    if not len(association) == 0:
+        return response_json(
+            errcode = SUCCESS,
+        )
+    association = UserGroup(
+        user = user,
+        group = group,
+        role = 'A'
+    )
+    association.save()
+    return response_json(
+        errcode = SUCCESS
+    )
