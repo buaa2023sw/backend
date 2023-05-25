@@ -267,3 +267,26 @@ def modify_information(request):
             errcode = Modification_Profile_Failed,
             message = Modification_Profile_Failed_Message
         )
+
+def save_topic(request):
+    kwargs: dict = json.loads(request.body)
+
+    user = User.objects.get(id = int(request.session['userId']))
+    user.topic = kwargs.get('topic')
+    user.save()
+
+    projects = [{ 'id': p.id, 'name': p.name } for p in user.project_set.all()]
+    for up in UserProject.objects.filter(user_id = user.id):
+        project = Project.objects.filter(id = int(up.project_id.id)).first()
+        projects.append({'id': project.id, 'name': project.name})
+    return response_json(
+        errcode = Success,
+        data = {
+            'id': user.id,
+            'name': user.name,
+            'email': user.email,
+            'projects': projects,
+            'status': user.status,
+            'topic': user.color,
+        }
+    )
