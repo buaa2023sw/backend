@@ -36,7 +36,7 @@ def userDocListTemplate(userId, projectId, table):
       userName = User.objects.get(id=entry.user_id.id).name
       accessUser.append({"id" : entry.user_id.id, "name" : userName})
     
-    isCollect = UserCollectDoc.objects.filter(user_id=userId).exists()
+    isCollect = UserCollectDoc.objects.filter(user_id=userId, doc_id=docEntry.id).exists()
     
     data.append({"id" : docEntry.id, 
                  "name" : docEntry.name, 
@@ -85,8 +85,7 @@ def addDocToCollect(userId, projectId, docId):
   userProject = isUserInProject(userId, projectId)
   if userProject == None:
     return genResponseStateInfo(response, 2, "user not in project")
-  docprev = UserCollectDoc.objects.filter(user_id=User.objects.get(id=userId), 
-                 doc_id=Document.objects.get(id=docId))
+  docprev = UserCollectDoc.objects.filter(user_id=userId, doc_id=docId)
   if len(docprev) > 0:
     return genResponseStateInfo(response, 3, "doc already in collect")
   UserCollectDoc(user_id=User.objects.get(id=userId), 
