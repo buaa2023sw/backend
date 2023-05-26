@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc
+from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc, mail
 from myApp import notice, userChat
 from django.urls import re_path
 from myApp import chatConsumer
@@ -111,4 +111,5 @@ urlpatterns = [
     path('api/chat/addPerson', userChat.add_user_to_group),
     # path('api/doc/docTimeUpdate', shareDoc.DocTimeUpdate.as_view()),
     path('api/plan/ProjectInfo',userPlan.ProjectInfo.as_view()),
+    path('api/mailTest', mail.MailTest.as_view()),
 ]
