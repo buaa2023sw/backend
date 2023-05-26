@@ -102,6 +102,7 @@ urlpatterns = [
     path('api/doc/userReleaseDocLock', shareDoc.UserReleaseDocLock.as_view()),
     path('api/doc/userEditDocOther', shareDoc.UserEditDocOther.as_view()),
     path('api/doc/userDelDoc', shareDoc.UserDelDoc.as_view()),
+    path('api/doc/isDocLocked', shareDoc.IsDocLocked.as_view()),
     path('api/chat/discussions', userChat.get_user_public_groups),
     path('api/chat/private', userChat.get_user_private_groups),
     path('api/chat/getRoomMessages', userChat.get_room_content),

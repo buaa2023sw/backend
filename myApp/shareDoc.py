@@ -359,3 +359,17 @@ class DocTimeUpdate(View):
       return JsonResponse({'message': str(e), "errcode": -1}) 
     return JsonResponse(response)
   
+class IsDocLocked(View):
+  def post(self, request):
+    response = {'message': "404 not success", "errcode": -1}
+    try:
+      kwargs: dict = json.loads(request.body)
+    except Exception:
+      return JsonResponse(response)
+    docId = kwargs.get('docId')
+    o = UserDocLock.objects.filter(doc_id=docId)
+    response = {'message': "get isDocLocked ok", "errcode": 0}
+    response["isLocked"] = True
+    if len(o) == 0:
+      response["isLocked"] = False
+    return JsonResponse(response)
