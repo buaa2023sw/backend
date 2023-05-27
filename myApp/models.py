@@ -17,6 +17,19 @@ class User(models.Model):
         (ILLEGAL, 'ILLEGAL'),
         (ADMIN, 'ADMIN'),
     )
+    RED = 'A'
+    ORANGE = 'B'
+    GREEN = 'C'
+    BLUE = 'D'
+    PURPLE = 'E'
+    COLOR_LIST = (
+        (RED, 'RED'),
+        (ORANGE, 'ORG'),
+        (GREEN, 'GREEN'),
+        (BLUE, 'BLUE'),
+        (PURPLE, 'PUR')
+    )
+    color  = models.CharField(max_length=10, choices=COLOR_LIST)
     status = models.CharField(max_length=2, choices=STATUS_LIST)
 
 
@@ -141,6 +154,10 @@ class UserAccessDoc(models.Model):
   id            = models.AutoField(primary_key=True)
   user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
   doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE)
+  
+class UserDocLock(models.Model):
+  doc_id        = models.ForeignKey(Document, on_delete=models.CASCADE, unique=True)
+  user_id       = models.ForeignKey(User, on_delete=models.CASCADE)
 
 class Post(models.Model):
     id = models.AutoField(primary_key=True)

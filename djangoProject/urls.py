@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 
-from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc,file
+from myApp import userdevelop, manager, userBasic, userPlan, debug, AI, shareDoc,file,mail
 from myApp import notice, userChat
 from django.urls import re_path
 from myApp import chatConsumer
@@ -58,6 +58,7 @@ urlpatterns = [
     path('api/user/information/password', userBasic.modify_password),
     path('api/showProfile', userBasic.show),
     path('api/editProfile', userBasic.modify_information),
+    path('api/saveTopic', userBasic.save_topic),
     path('api/plan/newProject', userPlan.newProject.as_view()),
     path('api/plan/watchAllProject', userPlan.watchAllProject.as_view()),
     path('api/plan/addTask', userPlan.addTask.as_view()),
@@ -96,8 +97,12 @@ urlpatterns = [
     path('api/doc/addDocToCollect', shareDoc.AddDocToCollect.as_view()),
     path('api/doc/delDocFromCollect', shareDoc.DelDocFromCollect.as_view()),
     path('api/doc/userCreateDoc', shareDoc.UserCreateDoc.as_view()),
-    path('api/doc/userEditDoc', shareDoc.UserEditDoc.as_view()),
+    path('api/doc/userEditDocContent', shareDoc.UserEditDocContent.as_view()),
+    path('api/doc/userGetDocLock', shareDoc.UserGetDocLock.as_view()),
+    path('api/doc/userReleaseDocLock', shareDoc.UserReleaseDocLock.as_view()),
+    path('api/doc/userEditDocOther', shareDoc.UserEditDocOther.as_view()),
     path('api/doc/userDelDoc', shareDoc.UserDelDoc.as_view()),
+    path('api/doc/isDocLocked', shareDoc.IsDocLocked.as_view()),
     path('api/chat/discussions', userChat.get_user_public_groups),
     path('api/chat/private', userChat.get_user_private_groups),
     path('api/chat/getRoomMessages', userChat.get_room_content),
@@ -108,5 +113,6 @@ urlpatterns = [
     path('api/plan/ProjectInfo',userPlan.ProjectInfo.as_view()),
     path('api/file/uploadFile',file.uploadFile.as_view()),
     path('api/file/downloadFile',file.downloadFile.as_view()),
-    path('api/file/watchFiles',file.watchFiles.as_view())
+    path('api/file/watchFiles',file.watchFiles.as_view()),
+    path('api/mailTest', mail.MailTest.as_view()),
 ]
