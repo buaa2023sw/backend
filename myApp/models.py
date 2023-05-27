@@ -84,11 +84,19 @@ class Group(models.Model):
     )
     type          = models.CharField(max_length=5, choices=TYPE_LIST)
 
+
 class Notice(models.Model):
     id = models.AutoField(primary_key=True)
     belongingTask = models.ForeignKey(Task, on_delete=models.CASCADE)
     deadline = models.DateTimeField()
     content = models.TextField()
+
+
+class MyFile(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255)
+    path = models.CharField(max_length=255)
+    project_id = models.ForeignKey(Project, on_delete=models.CASCADE)
 
 
 class Message(models.Model):
