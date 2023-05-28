@@ -172,3 +172,16 @@ def add_user_to_group(request):
     return response_json(
         errcode = SUCCESS
     )
+
+
+def delete_user_from_group(request):
+    kwargs: dict = json.loads(request.body)
+
+    user = User.objects.get(id = int(kwargs.get('userId')))
+    room = Group.objects.get(id = int(kwargs.get('roomId')))
+    association = UserGroup.objects.filter(user = user, group = room)
+    association.delete()
+
+    return response_json(
+        errcode = SUCCESS
+    )
