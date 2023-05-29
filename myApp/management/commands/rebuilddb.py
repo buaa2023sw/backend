@@ -45,7 +45,7 @@ class Command(BaseCommand):
     for i in range(2, 11):
       name = "user" + str(i)
       email = "2037364" + str(i) + "@buaa.edu.cn"
-      password = sha256(str(i) + str(i) + str(i) + str(i) + str(i) + str(i)).hexdigest()
+      password = sha256((str(i) + str(i) + str(i) + str(i) + str(i) + str(i)).encode('utf-8')).hexdigest()
       userListToInsert.append(User(name=name, email=email,
                                    password=password,status=User.NORMAL
                                    ,last_login_time=datetime.datetime.today()))

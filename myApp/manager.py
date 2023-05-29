@@ -120,7 +120,7 @@ class ResetUserPassword(View):
     user = User.objects.get(id=userId)
     userName = user.name
     resetPassWord = genRandStr()
-    user.password = sha256(resetPassWord).hexdigest()
+    user.password = sha256(resetPassWord.encode('utf-8')).hexdigest()
     user.save()
     response["name"] = userName
     response["resetPassword"] = resetPassWord
