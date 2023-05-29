@@ -336,7 +336,7 @@ class GetIssueList(View):
       log = "getIssueList.log"
       remotePath = Repo.objects.get(id=repoId).remote_path
       os.system("gh api -H \"Accept: application/vnd.github+json\" -H \
-                \"X-GitHub-Api-Version: 2022-11-28\" /repos/" + remotePath + "/issues > " + os.path.join(USER_REPOS_DIR, log))
+                \"X-GitHub-Api-Version: 2022-11-28\" /repos/" + remotePath + "/issues?state=all > " + os.path.join(USER_REPOS_DIR, log))
       ghInfo = json.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
       for it in ghInfo:
         data.append({"issueId" : it["number"],
@@ -377,7 +377,7 @@ class GetPrList(View):
     try:
       log = "getPrList.log"
       remotePath = Repo.objects.get(id=repoId).remote_path
-      os.system("gh api  /repos/" + remotePath + "/pulls > " + os.path.join(USER_REPOS_DIR, log))
+      os.system("gh api  /repos/" + remotePath + "/pulls?state=all > " + os.path.join(USER_REPOS_DIR, log))
       ghInfo = json.load(open(os.path.join(USER_REPOS_DIR, log), encoding="utf-8"))
       for it in ghInfo:
         data.append({"prId" : it["number"],
