@@ -185,3 +185,14 @@ def delete_user_from_group(request):
     return response_json(
         errcode = SUCCESS
     )
+
+
+def delete_user_from_groups(user_id: int, project_id: int):
+    user = User.objects.get(id = int(user_id))
+    project = Project.objects.get(id = int(project_id))
+
+    groups = Group.objects.filter(project_id = project)
+    for group in groups:
+        association = UserGroup.objects.filter(user = user, group = group)
+        if not len(association) == 0:
+            association.first().delete()
