@@ -9,7 +9,7 @@ def get_room_content(request):
 
     roomId = int(kwargs.get('roomId'))
     group = Group.objects.get(id = roomId)
-    user = User.objects.get(id = int(request.session['userId']))
+    user = User.objects.get(id = int(kwargs.get('userId')))
 
     messages = [
         {

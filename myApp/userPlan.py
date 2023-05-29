@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from myApp.models import *
 from django.views import View
-from userChat import delete_user_from_groups
+from myApp.userChat import delete_user_from_groups
 import json
 import datetime
 
