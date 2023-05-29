@@ -9,7 +9,7 @@ def get_room_content(request):
 
     roomId = int(kwargs.get('roomId'))
     group = Group.objects.get(id = roomId)
-    user = User.objects.get(id = int(request.session['userId']))
+    user = User.objects.get(id = int(kwargs.get('userId')))
 
     messages = [
         {
@@ -32,7 +32,7 @@ def get_user_public_groups(request):
     kwargs: dict = json.loads(request.body)
 
     projectId = int(kwargs.get('projectId'))
-    userId = int(request.session['userId'])
+    userId = int(kwargs.get('userId'))
 
     discussions = []
     for association in UserGroup.objects.filter(user = userId):
@@ -172,3 +172,27 @@ def add_user_to_group(request):
     return response_json(
         errcode = SUCCESS
     )
+
+
+def delete_user_from_group(request):
+    kwargs: dict = json.loads(request.body)
+
+    user = User.objects.get(id = int(kwargs.get('userId')))
+    room = Group.objects.get(id = int(kwargs.get('roomId')))
+    association = UserGroup.objects.filter(user = user, group = room)
+    association.delete()
+
+    return response_json(
+        errcode = SUCCESS
+    )
+
+
+def delete_user_from_groups(user_id: int, project_id: int):
+    user = User.objects.get(id = int(user_id))
+    project = Project.objects.get(id = int(project_id))
+
+    groups = Group.objects.filter(project_id = project)
+    for group in groups:
+        association = UserGroup.objects.filter(user = user, group = group)
+        if not len(association) == 0:
+            association.first().delete()

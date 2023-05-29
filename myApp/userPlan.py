@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from myApp.models import *
 from django.views import View
+from myApp.userChat import delete_user_from_groups
 import json
 import datetime
 
@@ -635,6 +636,7 @@ class removeMember(View):
         # ids=[]
         # for i in a:
         #     ids.append(i.user_id)
+        delete_user_from_groups(user_id=int(peopleId), project_id=int(projectId))
 
         UserProject.objects.filter(user_id_id=peopleId, project_id_id=projectId).delete()
         response['errcode'] = 0
