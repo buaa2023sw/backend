@@ -9,7 +9,7 @@ def get_room_content(request):
 
     roomId = int(kwargs.get('roomId'))
     group = Group.objects.get(id = roomId)
-    user = User.objects.get(id = int(request.session['userId']))
+    user = User.objects.get(id = int(kwargs.get('userId')))
 
     messages = [
         {
@@ -32,7 +32,7 @@ def get_user_public_groups(request):
     kwargs: dict = json.loads(request.body)
 
     projectId = int(kwargs.get('projectId'))
-    userId = int(request.session['userId'])
+    userId = int(kwargs.get('userId')
 
     discussions = []
     for association in UserGroup.objects.filter(user = userId):
