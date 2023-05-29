@@ -32,7 +32,7 @@ def get_user_public_groups(request):
     kwargs: dict = json.loads(request.body)
 
     projectId = int(kwargs.get('projectId'))
-    userId = int(kwargs.get('userId')
+    userId = int(kwargs.get('userId'))
 
     discussions = []
     for association in UserGroup.objects.filter(user = userId):
