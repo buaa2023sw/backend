@@ -6,6 +6,7 @@ from djangoProject.settings import DBG, USER_REPOS_DIR
 import sys
 import inspect
 import datetime
+from hashlib import sha256
 
 admin_name = "system"
 admin_pw = "bcb15f821479b4d5772bd0ca866c00ad5f926e3580720659cc80d39c9d09802a" # SHA256 for 111111
@@ -44,7 +45,7 @@ class Command(BaseCommand):
     for i in range(2, 11):
       name = "user" + str(i)
       email = "2037364" + str(i) + "@buaa.edu.cn"
-      password = "2037364" + str(i)
+      password = sha256(str(i) + str(i) + str(i) + str(i) + str(i) + str(i)).hexdigest()
       userListToInsert.append(User(name=name, email=email,
                                    password=password,status=User.NORMAL
                                    ,last_login_time=datetime.datetime.today()))

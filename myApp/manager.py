@@ -11,7 +11,7 @@ import shutil
 import sys
 from myApp.userdevelop import genResponseStateInfo, genUnexpectedlyErrorInfo
 import random
-
+from hashlib import sha256
 
 # TODO : add check manager function
 def isAdmin(userId):
@@ -120,7 +120,7 @@ class ResetUserPassword(View):
     user = User.objects.get(id=userId)
     userName = user.name
     resetPassWord = genRandStr()
-    user.password = resetPassWord
+    user.password = sha256(resetPassWord).hexdigest()
     user.save()
     response["name"] = userName
     response["resetPassword"] = resetPassWord
