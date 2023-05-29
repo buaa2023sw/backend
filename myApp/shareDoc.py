@@ -28,6 +28,8 @@ def userDocListTemplate(userId, projectId, table):
   tableEntries = table.objects.filter(user_id=userId)
   for entry in tableEntries:
     docEntry = Document.objects.get(id=entry.doc_id.id)
+    if str(docEntry.id) != str(projectId):
+      continue
     ownerName = User.objects.get(id=docEntry.user_id.id).name
 
     userAccessEntries = UserAccessDoc.objects.filter(doc_id=entry.doc_id.id)
